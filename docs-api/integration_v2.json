@@ -1,0 +1,683 @@
+{
+  "apiInfo": {
+    "title": "Container Management API",
+    "version": "1.0.0",
+    "baseUrl": "http://localhost:3001",
+    "description": "API completa para gerenciamento de containers, averbações, usuários e seguradoras",
+    "authentication": {
+      "type": "Bearer Token",
+      "header": "Authorization",
+      "format": "Bearer {token}",
+      "description": "Token JWT obtido através do endpoint de login"
+    }
+  },
+  "endpoints": {
+    "auth": {
+      "login": {
+        "url": "/api/auth/login",
+        "method": "POST",
+        "description": "Realiza autenticação do usuário e retorna token JWT",
+        "requiresAuth": false,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "payload": {
+          "required": ["email", "senha"],
+          "properties": {
+            "email": {
+              "type": "string",
+              "format": "email",
+              "description": "Email do usuário",
+              "example": "admin@container.com"
+            },
+            "senha": {
+              "type": "string",
+              "minLength": 6,
+              "description": "Senha do usuário",
+              "example": "admin123"
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login realizado com sucesso",
+            "example": {
+              "success": true,
+              "message": "Login realizado com sucesso",
+              "data": {
+                "user": {
+                  "idUsuario": 1,
+                  "nomeCompleto": "Administrador do Sistema",
+                  "email": "admin@container.com",
+                  "cpf": "12345678901",
+                  "telefone": "(11) 99999-9999",
+                  "celular": "(11) 88888-8888",
+                  "status": "ativo",
+                  "ultimoAcesso": "2025-09-30T20:00:00.000Z",
+                  "perfil": {
+                    "idPerfil": 1,
+                    "nomePerfil": "Administrador",
+                    "descricao": "Acesso total ao sistema",
+                    "nivelAcesso": 1,
+                    "perfilPermissoes": [
+                      {
+                        "permissao": {
+                          "idPermissao": 1,
+                          "nomePermissao": "usuarios.listar",
+                          "descricao": "Listar usuários",
+                          "modulo": "usuarios",
+                          "acao": "listar"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+              }
+            }
+          },
+          "400": {
+            "description": "Dados inválidos",
+            "example": {
+              "success": false,
+              "message": "Email e senha são obrigatórios",
+              "errors": ["Email é obrigatório", "Senha é obrigatória"]
+            }
+          },
+          "401": {
+            "description": "Credenciais inválidas",
+            "example": {
+              "success": false,
+              "message": "Email ou senha inválidos"
+            }
+          }
+        },
+        "curlExample": "curl -X POST http://localhost:3001/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"admin@container.com\",\"senha\":\"admin123\"}'"
+      }
+    },
+    "usuarios": {
+      "list": {
+        "url": "/api/usuarios",
+        "method": "GET",
+        "description": "Lista usuários com paginação e filtros",
+        "requiresAuth": true,
+        "headers": {
+          "Authorization": "Bearer {token}",
+          "Content-Type": "application/json"
+        },
+        "queryParams": {
+          "page": {
+            "type": "integer",
+            "default": 1,
+            "description": "Número da página",
+            "example": 1
+          },
+          "limit": {
+            "type": "integer",
+            "default": 10,
+            "min": 1,
+            "max": 100,
+            "description": "Itens por página",
+            "example": 10
+          },
+          "search": {
+            "type": "string",
+            "description": "Buscar por nome ou email",
+            "example": "admin"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["ativo", "inativo", "bloqueado"],
+            "description": "Filtrar por status",
+            "example": "ativo"
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Lista de usuários",
+            "example": {
+              "success": true,
+              "message": "Usuários listados com sucesso",
+              "data": [
+                {
+                  "idUsuario": 1,
+                  "nomeCompleto": "Administrador do Sistema",
+                  "email": "admin@container.com",
+                  "cpf": "12345678901",
+                  "telefone": "(11) 99999-9999",
+                  "celular": "(11) 88888-8888",
+                  "status": "ativo",
+                  "dataCriacao": "2025-09-30T10:00:00.000Z",
+                  "ultimoAcesso": "2025-09-30T20:00:00.000Z",
+                  "perfil": {
+                    "idPerfil": 1,
+                    "nomePerfil": "Administrador",
+                    "descricao": "Acesso total ao sistema"
+                  }
+                }
+              ],
+              "pagination": {
+                "page": 1,
+                "limit": 10,
+                "total": 1,
+                "pages": 1
+              },
+              "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            }
+          },
+          "401": {
+            "description": "Token inválido ou expirado",
+            "example": {
+              "success": false,
+              "message": "Token inválido ou expirado"
+            }
+          },
+          "403": {
+            "description": "Permissão insuficiente",
+            "example": {
+              "success": false,
+              "message": "Acesso negado: permissão insuficiente"
+            }
+          }
+        },
+        "curlExample": "curl -X GET \"http://localhost:3001/api/usuarios?page=1&limit=10\" -H \"Authorization: Bearer {token}\""
+      },
+      "create": {
+        "url": "/api/usuarios",
+        "method": "POST",
+        "description": "Cria um novo usuário no sistema",
+        "requiresAuth": true,
+        "headers": {
+          "Authorization": "Bearer {token}",
+          "Content-Type": "application/json"
+        },
+        "payload": {
+          "required": ["nomeCompleto", "email", "senha", "idPerfil"],
+          "properties": {
+            "nomeCompleto": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 100,
+              "description": "Nome completo do usuário",
+              "example": "João Silva Santos"
+            },
+            "email": {
+              "type": "string",
+              "format": "email",
+              "description": "Email único do usuário",
+              "example": "joao.silva@empresa.com"
+            },
+            "senha": {
+              "type": "string",
+              "minLength": 6,
+              "description": "Senha do usuário (será criptografada)",
+              "example": "senha123"
+            },
+            "idPerfil": {
+              "type": "integer",
+              "description": "ID do perfil de acesso",
+              "example": 2
+            },
+            "cpf": {
+              "type": "string",
+              "pattern": "^[0-9]{11}$",
+              "description": "CPF do usuário (apenas números)",
+              "example": "12345678901"
+            },
+            "telefone": {
+              "type": "string",
+              "description": "Telefone do usuário",
+              "example": "(11) 3333-4444"
+            },
+            "celular": {
+              "type": "string",
+              "description": "Celular do usuário",
+              "example": "(11) 99999-8888"
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Usuário criado com sucesso",
+            "example": {
+              "success": true,
+              "message": "Usuário criado com sucesso",
+              "data": {
+                "idUsuario": 2,
+                "nomeCompleto": "João Silva Santos",
+                "email": "joao.silva@empresa.com"
+              },
+              "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            }
+          },
+          "400": {
+            "description": "Dados inválidos",
+            "example": {
+              "success": false,
+              "message": "Dados inválidos",
+              "errors": ["Email já está em uso", "CPF inválido"]
+            }
+          }
+        },
+        "curlExample": "curl -X POST http://localhost:3001/api/usuarios -H \"Authorization: Bearer {token}\" -H \"Content-Type: application/json\" -d '{\"nomeCompleto\":\"João Silva\",\"email\":\"joao@empresa.com\",\"senha\":\"senha123\",\"idPerfil\":2}'"
+      }
+    },
+    "containers": {
+      "list": {
+        "url": "/api/containers",
+        "method": "GET",
+        "description": "Lista containers com filtros e paginação",
+        "requiresAuth": true,
+        "headers": {
+          "Authorization": "Bearer {token}",
+          "Content-Type": "application/json"
+        },
+        "queryParams": {
+          "page": {
+            "type": "integer",
+            "default": 1,
+            "description": "Número da página",
+            "example": 1
+          },
+          "limit": {
+            "type": "integer",
+            "default": 10,
+            "description": "Itens por página",
+            "example": 10
+          },
+          "numeroContainer": {
+            "type": "string",
+            "description": "Filtrar por número do container",
+            "example": "ABCD1234567"
+          },
+          "tipoContainer": {
+            "type": "string",
+            "description": "Filtrar por tipo do container",
+            "example": "20GP"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["disponivel", "em_uso", "manutencao", "fora_servico"],
+            "description": "Filtrar por status",
+            "example": "disponivel"
+          },
+          "dataInicio": {
+            "type": "string",
+            "format": "date",
+            "description": "Data inicial para filtro",
+            "example": "2025-01-01"
+          },
+          "dataFim": {
+            "type": "string",
+            "format": "date",
+            "description": "Data final para filtro",
+            "example": "2025-12-31"
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Lista de containers",
+            "example": {
+              "success": true,
+              "message": "Containers listados com sucesso",
+              "data": [
+                {
+                  "idContainer": 1,
+                  "numeroContainer": "ABCD1234567",
+                  "tipoContainer": "20GP",
+                  "status": "disponivel",
+                  "capacidade": 28000,
+                  "peso": 2200,
+                  "dataCriacao": "2025-09-30T10:00:00.000Z",
+                  "dataAtualizacao": "2025-09-30T15:30:00.000Z"
+                }
+              ],
+              "pagination": {
+                "page": 1,
+                "limit": 10,
+                "total": 1,
+                "pages": 1
+              },
+              "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            }
+          }
+        },
+        "curlExample": "curl -X GET \"http://localhost:3001/api/containers?status=disponivel&page=1\" -H \"Authorization: Bearer {token}\""
+      },
+      "create": {
+        "url": "/api/containers",
+        "method": "POST",
+        "description": "Cria um novo container",
+        "requiresAuth": true,
+        "headers": {
+          "Authorization": "Bearer {token}",
+          "Content-Type": "application/json"
+        },
+        "payload": {
+          "required": ["numeroContainer", "tipoContainer"],
+          "properties": {
+            "numeroContainer": {
+              "type": "string",
+              "pattern": "^[A-Z]{4}[0-9]{7}$",
+              "description": "Número único do container (formato: 4 letras + 7 números)",
+              "example": "ABCD1234567"
+            },
+            "tipoContainer": {
+              "type": "string",
+              "description": "Tipo do container",
+              "example": "20GP"
+            },
+            "capacidade": {
+              "type": "number",
+              "description": "Capacidade em kg",
+              "example": 28000
+            },
+            "peso": {
+              "type": "number",
+              "description": "Peso vazio em kg",
+              "example": 2200
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Container criado com sucesso",
+            "example": {
+              "success": true,
+              "message": "Container criado com sucesso",
+              "data": {
+                "idContainer": 2,
+                "numeroContainer": "EFGH7654321",
+                "tipoContainer": "40HC"
+              },
+              "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            }
+          }
+        },
+        "curlExample": "curl -X POST http://localhost:3001/api/containers -H \"Authorization: Bearer {token}\" -H \"Content-Type: application/json\" -d '{\"numeroContainer\":\"EFGH7654321\",\"tipoContainer\":\"40HC\",\"capacidade\":26500,\"peso\":3900}'"
+      }
+    },
+    "clientes": {
+      "list": {
+        "url": "/api/clientes",
+        "method": "GET",
+        "description": "Lista clientes com paginação",
+        "requiresAuth": true,
+        "headers": {
+          "Authorization": "Bearer {token}",
+          "Content-Type": "application/json"
+        },
+        "queryParams": {
+          "page": {
+            "type": "integer",
+            "default": 1,
+            "description": "Número da página",
+            "example": 1
+          },
+          "limit": {
+            "type": "integer",
+            "default": 10,
+            "description": "Itens por página",
+            "example": 10
+          },
+          "search": {
+            "type": "string",
+            "description": "Buscar por nome da empresa ou CNPJ",
+            "example": "Empresa"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["ativo", "inativo"],
+            "description": "Filtrar por status",
+            "example": "ativo"
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Lista de clientes",
+            "example": {
+              "success": true,
+              "message": "Clientes listados com sucesso",
+              "data": [
+                {
+                  "idCliente": 1,
+                  "nomeEmpresa": "Empresa Exemplo Ltda",
+                  "cnpj": "12345678000199",
+                  "email": "contato@empresa.com",
+                  "telefone": "(11) 3333-4444",
+                  "endereco": "Rua das Empresas, 123 - São Paulo/SP",
+                  "status": "ativo",
+                  "dataCriacao": "2025-09-30T10:00:00.000Z"
+                }
+              ],
+              "pagination": {
+                "page": 1,
+                "limit": 10,
+                "total": 1,
+                "pages": 1
+              },
+              "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            }
+          }
+        },
+        "curlExample": "curl -X GET \"http://localhost:3001/api/clientes?status=ativo\" -H \"Authorization: Bearer {token}\""
+      }
+    },
+    "seguradoras": {
+      "list": {
+        "url": "/api/seguradoras",
+        "method": "GET",
+        "description": "Lista seguradoras com paginação",
+        "requiresAuth": true,
+        "headers": {
+          "Authorization": "Bearer {token}",
+          "Content-Type": "application/json"
+        },
+        "queryParams": {
+          "page": {
+            "type": "integer",
+            "default": 1,
+            "description": "Número da página",
+            "example": 1
+          },
+          "limit": {
+            "type": "integer",
+            "default": 10,
+            "description": "Itens por página",
+            "example": 10
+          },
+          "search": {
+            "type": "string",
+            "description": "Buscar por nome da seguradora",
+            "example": "Seguradora"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["ativa", "inativa"],
+            "description": "Filtrar por status",
+            "example": "ativa"
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Lista de seguradoras",
+            "example": {
+              "success": true,
+              "message": "Seguradoras listadas com sucesso",
+              "data": [
+                {
+                  "idSeguradora": 1,
+                  "nomeSeguradora": "Seguradora Exemplo S.A.",
+                  "cnpj": "98765432000188",
+                  "email": "contato@seguradora.com",
+                  "telefone": "(11) 5555-6666",
+                  "status": "ativa",
+                  "dataCriacao": "2025-09-30T10:00:00.000Z"
+                }
+              ],
+              "pagination": {
+                "page": 1,
+                "limit": 10,
+                "total": 1,
+                "pages": 1
+              },
+              "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            }
+          },
+          "403": {
+            "description": "Permissão insuficiente",
+            "example": {
+              "success": false,
+              "message": "Acesso negado: permissão insuficiente"
+            }
+          }
+        },
+        "curlExample": "curl -X GET \"http://localhost:3001/api/seguradoras\" -H \"Authorization: Bearer {token}\""
+      }
+    },
+    "permissoes": {
+      "list": {
+        "url": "/api/permissoes",
+        "method": "GET",
+        "description": "Lista todas as permissões do sistema",
+        "requiresAuth": true,
+        "headers": {
+          "Authorization": "Bearer {token}",
+          "Content-Type": "application/json"
+        },
+        "queryParams": {
+          "modulo": {
+            "type": "string",
+            "description": "Filtrar por módulo",
+            "example": "usuarios"
+          },
+          "acao": {
+            "type": "string",
+            "description": "Filtrar por ação",
+            "example": "listar"
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Lista de permissões",
+            "example": {
+              "success": true,
+              "message": "Permissões listadas com sucesso",
+              "data": [
+                {
+                  "idPermissao": 1,
+                  "nomePermissao": "usuarios.listar",
+                  "descricao": "Listar usuários do sistema",
+                  "modulo": "usuarios",
+                  "acao": "listar",
+                  "dataCriacao": "2025-09-30T10:00:00.000Z"
+                },
+                {
+                  "idPermissao": 2,
+                  "nomePermissao": "containers.criar",
+                  "descricao": "Criar novos containers",
+                  "modulo": "containers",
+                  "acao": "criar",
+                  "dataCriacao": "2025-09-30T10:00:00.000Z"
+                }
+              ],
+              "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            }
+          }
+        },
+        "curlExample": "curl -X GET \"http://localhost:3001/api/permissoes?modulo=usuarios\" -H \"Authorization: Bearer {token}\""
+      }
+    }
+  },
+  "commonErrors": {
+    "400": {
+      "name": "Bad Request",
+      "description": "Dados inválidos ou malformados",
+      "example": {
+        "success": false,
+        "message": "Dados inválidos",
+        "errors": ["Campo obrigatório não informado"]
+      }
+    },
+    "401": {
+      "name": "Unauthorized",
+      "description": "Token inválido, expirado ou não fornecido",
+      "example": {
+        "success": false,
+        "message": "Token inválido ou expirado"
+      }
+    },
+    "403": {
+      "name": "Forbidden",
+      "description": "Usuário não possui permissão para acessar o recurso",
+      "example": {
+        "success": false,
+        "message": "Acesso negado: permissão insuficiente"
+      }
+    },
+    "404": {
+      "name": "Not Found",
+      "description": "Recurso não encontrado",
+      "example": {
+        "success": false,
+        "message": "Recurso não encontrado"
+      }
+    },
+    "429": {
+      "name": "Too Many Requests",
+      "description": "Limite de requisições excedido",
+      "example": {
+        "success": false,
+        "message": "Muitas requisições. Tente novamente em alguns minutos."
+      }
+    },
+    "500": {
+      "name": "Internal Server Error",
+      "description": "Erro interno do servidor",
+      "example": {
+        "success": false,
+        "message": "Erro interno do servidor"
+      }
+    }
+  },
+  "integrationNotes": {
+    "authentication": {
+      "description": "Todos os endpoints (exceto login) requerem autenticação via Bearer Token",
+      "tokenRefresh": "O token é renovado automaticamente em cada resposta bem-sucedida",
+      "tokenExpiration": "Tokens expiram em 24 horas",
+      "storage": "Armazene o token de forma segura (localStorage, sessionStorage ou cookie httpOnly)"
+    },
+    "pagination": {
+      "description": "Endpoints de listagem suportam paginação",
+      "defaultLimit": 10,
+      "maxLimit": 100,
+      "responseFormat": "Resposta inclui objeto 'pagination' com informações da paginação"
+    },
+    "filtering": {
+      "description": "Muitos endpoints suportam filtros via query parameters",
+      "searchFields": "Campos de busca geralmente incluem nome, email, número, etc.",
+      "dateFilters": "Filtros de data devem usar formato ISO (YYYY-MM-DD)"
+    },
+    "errorHandling": {
+      "description": "Sempre verifique o campo 'success' na resposta",
+      "errorMessages": "Mensagens de erro estão no campo 'message'",
+      "validationErrors": "Erros de validação detalhados estão no array 'errors'"
+    },
+    "bestPractices": {
+      "rateLimit": "Respeite os limites de requisições (100 req/min por IP)",
+      "caching": "Implemente cache para dados que não mudam frequentemente",
+      "errorRetry": "Implemente retry automático para erros 5xx",
+      "tokenManagement": "Sempre use o token mais recente retornado pela API"
+    }
+  },
+  "frontendExamples": {
+    "javascript": {
+      "login": "const response = await fetch('/api/auth/login', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ email: 'admin@container.com', senha: 'admin123' })\n});\nconst data = await response.json();\nif (data.success) {\n  localStorage.setItem('token', data.data.token);\n}",
+      "authenticatedRequest": "const token = localStorage.getItem('token');\nconst response = await fetch('/api/usuarios', {\n  headers: { 'Authorization': `Bearer ${token}` }\n});\nconst data = await response.json();\nif (data.token) {\n  localStorage.setItem('token', data.token);\n}"
+    },
+    "axios": {
+      "setup": "const api = axios.create({\n  baseURL: 'http://localhost:3001',\n  headers: { 'Content-Type': 'application/json' }\n});\n\napi.interceptors.request.use(config => {\n  const token = localStorage.getItem('token');\n  if (token) config.headers.Authorization = `Bearer ${token}`;\n  return config;\n});\n\napi.interceptors.response.use(response => {\n  if (response.data.token) {\n    localStorage.setItem('token', response.data.token);\n  }\n  return response;\n});",
+      "usage": "const usuarios = await api.get('/api/usuarios?page=1&limit=10');\nconst novoUsuario = await api.post('/api/usuarios', {\n  nomeCompleto: 'João Silva',\n  email: 'joao@empresa.com',\n  senha: 'senha123',\n  idPerfil: 2\n});"
+    }
+  }
+}

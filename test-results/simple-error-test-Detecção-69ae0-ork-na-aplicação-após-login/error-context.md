@@ -1,0 +1,130 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e5]:
+      - generic [ref=e7]:
+        - generic [ref=e8]: CI
+        - generic [ref=e9]: Cargo Insurance
+      - navigation [ref=e10]:
+        - list [ref=e11]:
+          - listitem [ref=e12]:
+            - link "Dashboard" [ref=e13] [cursor=pointer]:
+              - /url: /dashboard
+              - img [ref=e14]
+              - text: Dashboard
+          - listitem [ref=e16]:
+            - link "Averbacoes" [ref=e17] [cursor=pointer]:
+              - /url: /averbacoes
+              - img [ref=e18]
+              - text: Averbacoes
+          - listitem [ref=e20]:
+            - link "Containers" [ref=e21] [cursor=pointer]:
+              - /url: /containers
+              - img [ref=e22]
+              - text: Containers
+          - listitem [ref=e24]:
+            - link "Clientes" [ref=e25] [cursor=pointer]:
+              - /url: /clientes
+              - img [ref=e26]
+              - text: Clientes
+          - listitem [ref=e28]:
+            - link "Empresas" [ref=e29] [cursor=pointer]:
+              - /url: /empresas
+              - img [ref=e30]
+              - text: Empresas
+          - listitem [ref=e32]:
+            - link "Operacoes" [ref=e33] [cursor=pointer]:
+              - /url: /operacoes
+              - img [ref=e34]
+              - text: Operacoes
+          - listitem [ref=e36]:
+            - link "Seguradoras" [ref=e37] [cursor=pointer]:
+              - /url: /seguradoras
+              - img [ref=e38]
+              - text: Seguradoras
+          - listitem [ref=e40]:
+            - link "Usuarios" [ref=e41] [cursor=pointer]:
+              - /url: /usuarios
+              - img [ref=e42]
+              - text: Usuarios
+          - listitem [ref=e44]:
+            - link "Relatorios" [ref=e45] [cursor=pointer]:
+              - /url: /relatorios
+              - img [ref=e46]
+              - text: Relatorios
+          - listitem [ref=e48]:
+            - link "Perfil" [ref=e49] [cursor=pointer]:
+              - /url: /perfil
+              - img [ref=e50]
+              - text: Perfil
+          - listitem [ref=e52]:
+            - link "Profile" [ref=e53] [cursor=pointer]:
+              - /url: /profile
+              - img [ref=e54]
+              - text: Profile
+          - listitem [ref=e56]:
+            - link "Configuracoes" [ref=e57] [cursor=pointer]:
+              - /url: /configuracoes
+              - img [ref=e58]
+              - text: Configuracoes
+          - listitem [ref=e60]:
+            - link "Settings" [ref=e61] [cursor=pointer]:
+              - /url: /settings
+              - img [ref=e62]
+              - text: Settings
+    - generic [ref=e65]:
+      - generic [ref=e67]:
+        - generic [ref=e70]:
+          - img [ref=e71]
+          - textbox "Buscar containers, averbações, clientes..." [ref=e73]
+          - generic [ref=e74]:
+            - img [ref=e75]
+            - generic [ref=e77]: K
+        - generic [ref=e78]:
+          - button "Alternar tema" [ref=e79] [cursor=pointer]:
+            - generic [ref=e80]: Alternar tema
+            - img [ref=e81]
+          - button "Abrir menu do usuário" [ref=e85] [cursor=pointer]:
+            - generic [ref=e86]: Abrir menu do usuário
+            - img [ref=e87]
+      - main [ref=e89]:
+        - generic [ref=e90]:
+          - generic [ref=e91]:
+            - generic [ref=e92]:
+              - heading "Clientes" [level=1] [ref=e93]
+              - paragraph [ref=e94]: Gerencie os clientes do sistema
+            - button "Novo Cliente" [ref=e95] [cursor=pointer]
+          - generic [ref=e97]:
+            - heading "Filtros" [level=3] [ref=e98]
+            - generic [ref=e99]:
+              - generic [ref=e100]:
+                - generic [ref=e101]: Buscar (Razão Social, Email ou CNPJ)
+                - textbox "Buscar (Razão Social, Email ou CNPJ)" [ref=e102]:
+                  - /placeholder: Digite para buscar...
+              - generic [ref=e103]:
+                - generic [ref=e104]: Status
+                - combobox "Status" [ref=e105]:
+                  - option "Todos os status" [selected]
+                  - option "Ativo"
+                  - option "Inativo"
+                  - option "Suspenso"
+            - generic [ref=e106]:
+              - button "Limpar Filtros" [ref=e107] [cursor=pointer]
+              - button "Filtrar" [ref=e108] [cursor=pointer]
+          - table [ref=e114]:
+            - rowgroup [ref=e115]:
+              - row "Razão Social CNPJ Email Status Data Criação Ações" [ref=e116]:
+                - columnheader "Razão Social" [ref=e117]
+                - columnheader "CNPJ" [ref=e118]
+                - columnheader "Email" [ref=e119]
+                - columnheader "Status" [ref=e120]
+                - columnheader "Data Criação" [ref=e121]
+                - columnheader "Ações" [ref=e122]:
+                  - generic [ref=e123]: Ações
+            - rowgroup
+  - alert [ref=e124]
+  - button "Open Next.js Dev Tools" [ref=e130] [cursor=pointer]:
+    - img [ref=e131]
+```

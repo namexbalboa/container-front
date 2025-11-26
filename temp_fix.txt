@@ -1,0 +1,26 @@
+            if (!response.success || !response.data) {
+                throw new Error(response.error || "Erro ao carregar viagens");
+            }
+
+            // Validation 4: Check if all selected trips were found
+            if (response.data.length < selectedTripIds.size) {
+                console.warn(`[WIZARD] Algumas viagens não foram encontradas. Selecionadas: ${selectedTripIds.size}, Encontradas: ${response.data.length}`);
+            }
+
+            // Validation 5: Check if trips have containers
+            const tripsWithoutContainers = response.data.filter(
+                trip => !trip.containers || trip.containers.length === 0
+            );
+            if (tripsWithoutContainers.length > 0) {
+                console.warn(`[WIZARD] ${tripsWithoutContainers.length} viagens sem containers associados`);
+            }
+
+            onUpdate({ selectedTrips: response.data });
+
+            // Aguarda um pequeno delay para garantir que o estado foi atualizado
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            onNext();
+
+            // Scroll para o topo ao avançar
+            window.scrollTo({ top: 0, behavior: 'smooth' });

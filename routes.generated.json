@@ -1,0 +1,4179 @@
+{
+  "metadata": {
+    "generatedAt": "2025-10-15T01:28:55Z",
+    "basePath": "/api",
+    "source": "src/routes",
+    "description": "Documentação das rotas Express com tipos de payloads e responses"
+  },
+  "bodyTypes": {
+    "successEnvelope": {
+      "description": "Resposta padrão de sucesso",
+      "schema": {
+        "type": "object",
+        "required": [
+          "success",
+          "message"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": [
+              "object",
+              "array",
+              "string",
+              "number",
+              "boolean",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "simpleMessage": {
+      "description": "Mensagem sem corpo de dados",
+      "schema": {
+        "type": "object",
+        "required": [
+          "success",
+          "message"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "paginatedEnvelope": {
+      "description": "Resultados paginados",
+      "schema": {
+        "type": "object",
+        "required": [
+          "success",
+          "message",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "required": [
+              "items",
+              "pagination"
+            ],
+            "properties": {
+              "items": {
+                "type": "array"
+              },
+              "pagination": {
+                "type": "object",
+                "properties": {
+                  "page": {
+                    "type": "integer"
+                  },
+                  "limit": {
+                    "type": "integer"
+                  },
+                  "total": {
+                    "type": "integer"
+                  },
+                  "totalPages": {
+                    "type": "integer"
+                  },
+                  "hasNext": {
+                    "type": "boolean"
+                  },
+                  "hasPrev": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "errorEnvelope": {
+      "description": "Resposta de erro padrão",
+      "schema": {
+        "type": "object",
+        "required": [
+          "success",
+          "message"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": false
+          },
+          "message": {
+            "type": "string"
+          },
+          "error": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "notImplemented": {
+      "description": "Placeholder de funcionalidade não implementada",
+      "schema": {
+        "type": "object",
+        "required": [
+          "success",
+          "message"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": false
+          },
+          "message": {
+            "type": "string",
+            "const": "Funcionalidade de ... ainda não implementada"
+          }
+        }
+      }
+    },
+    "uploadResult": {
+      "description": "Upload bem-sucedido retorna apenas a URL do arquivo",
+      "schema": {
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      }
+    }
+  },
+  "queryTemplates": {
+    "pagination": [
+      {
+        "name": "page",
+        "type": "integer",
+        "default": 1,
+        "minimum": 1
+      },
+      {
+        "name": "limit",
+        "type": "integer",
+        "default": 10,
+        "minimum": 1,
+        "maximum": 100
+      }
+    ],
+    "paginationWithSearch": [
+      {
+        "name": "page",
+        "type": "integer",
+        "default": 1,
+        "minimum": 1
+      },
+      {
+        "name": "limit",
+        "type": "integer",
+        "default": 10,
+        "minimum": 1,
+        "maximum": 100
+      },
+      {
+        "name": "search",
+        "type": "string",
+        "description": "Busca textual parcial"
+      }
+    ],
+    "dateRange": [
+      {
+        "name": "dataInicio",
+        "type": "string",
+        "format": "date-time"
+      },
+      {
+        "name": "dataFim",
+        "type": "string",
+        "format": "date-time"
+      }
+    ]
+  },
+  "routes": [
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "group": "Auth",
+      "summary": "Autentica usuário e retorna tokens JWT",
+      "authentication": false,
+      "permissions": [],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "email",
+            "type": "string",
+            "format": "email"
+          },
+          {
+            "name": "senha",
+            "type": "string",
+            "minLength": 6
+          }
+        ],
+        "optional": []
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Login bem-sucedido",
+          "bodyType": "successEnvelope",
+          "data": [
+            "usuario",
+            "token",
+            "refreshToken"
+          ]
+        },
+        {
+          "status": 400,
+          "description": "Dados inválidos",
+          "bodyType": "errorEnvelope"
+        },
+        {
+          "status": 401,
+          "description": "Credenciais inválidas",
+          "bodyType": "errorEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/register",
+      "group": "Auth",
+      "summary": "Cria uma nova conta de usuário",
+      "authentication": false,
+      "permissions": [],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "nome",
+            "type": "string"
+          },
+          {
+            "name": "email",
+            "type": "string",
+            "format": "email"
+          },
+          {
+            "name": "password",
+            "type": "string",
+            "minLength": 6
+          },
+          {
+            "name": "perfilId",
+            "type": "integer"
+          }
+        ],
+        "optional": [
+          {
+            "name": "telefone",
+            "type": "string"
+          },
+          {
+            "name": "celular",
+            "type": "string"
+          },
+          {
+            "name": "cpf",
+            "type": "string"
+          }
+        ]
+      },
+      "responses": [
+        {
+          "status": 201,
+          "description": "Usuário criado",
+          "bodyType": "successEnvelope"
+        },
+        {
+          "status": 400,
+          "description": "Dados inválidos",
+          "bodyType": "errorEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/change-password",
+      "group": "Auth",
+      "summary": "Altera a senha do usuário autenticado",
+      "authentication": true,
+      "permissions": [
+        "AUTH_CHANGE_PASSWORD"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "senhaAtual",
+            "type": "string"
+          },
+          {
+            "name": "novaSenha",
+            "type": "string",
+            "minLength": 6
+          }
+        ],
+        "optional": []
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Senha alterada",
+          "bodyType": "simpleMessage"
+        },
+        {
+          "status": 400,
+          "description": "Senha inválida",
+          "bodyType": "errorEnvelope"
+        },
+        {
+          "status": 401,
+          "description": "Não autenticado",
+          "bodyType": "errorEnvelope"
+        }
+      ],
+      "notes": "Necessita JWT válido"
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/profile",
+      "group": "Auth",
+      "summary": "Obtém dados do usuário autenticado",
+      "authentication": true,
+      "permissions": [],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Perfil retornado",
+          "bodyType": "successEnvelope",
+          "data": [
+            "usuario"
+          ]
+        },
+        {
+          "status": 401,
+          "description": "Não autenticado",
+          "bodyType": "errorEnvelope"
+        },
+        {
+          "status": 404,
+          "description": "Usuário não encontrado",
+          "bodyType": "errorEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "PUT",
+      "path": "/api/auth/profile",
+      "group": "Auth",
+      "summary": "Atualiza o perfil do usuário autenticado",
+      "authentication": true,
+      "permissions": [],
+      "payload": {
+        "contentType": "application/json",
+        "required": [],
+        "optional": [
+          {
+            "name": "nome",
+            "type": "string"
+          },
+          {
+            "name": "nomeCompleto",
+            "type": "string"
+          },
+          {
+            "name": "email",
+            "type": "string",
+            "format": "email"
+          },
+          {
+            "name": "telefone",
+            "type": "string"
+          },
+          {
+            "name": "celular",
+            "type": "string"
+          },
+          {
+            "name": "fotoPerfil",
+            "type": "string",
+            "format": "uri"
+          }
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Perfil atualizado",
+          "bodyType": "successEnvelope"
+        },
+        {
+          "status": 400,
+          "description": "Dados inválidos",
+          "bodyType": "errorEnvelope"
+        }
+      ],
+      "notes": "Campos senha, status e perfilId são ignorados"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/refresh-token",
+      "group": "Auth",
+      "summary": "Renova tokens de acesso",
+      "authentication": false,
+      "permissions": [],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "refreshToken",
+            "type": "string"
+          }
+        ],
+        "optional": []
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Token renovado",
+          "bodyType": "successEnvelope",
+          "data": [
+            "token",
+            "refreshToken",
+            "usuario"
+          ]
+        },
+        {
+          "status": 401,
+          "description": "Refresh token inválido",
+          "bodyType": "errorEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/logout",
+      "group": "Auth",
+      "summary": "Finaliza sessão (stateless)",
+      "authentication": true,
+      "permissions": [],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Logout efetuado",
+          "bodyType": "simpleMessage"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/forgot-password",
+      "group": "Auth",
+      "summary": "Solicita recuperação de senha",
+      "authentication": false,
+      "permissions": [],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "email",
+            "type": "string",
+            "format": "email"
+          }
+        ],
+        "optional": []
+      },
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/reset-password",
+      "group": "Auth",
+      "summary": "Redefine senha via token",
+      "authentication": false,
+      "permissions": [],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "token",
+            "type": "string"
+          },
+          {
+            "name": "newPassword",
+            "type": "string",
+            "minLength": 6
+          }
+        ],
+        "optional": []
+      },
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/usuarios",
+      "group": "Usuarios",
+      "summary": "Lista usuários",
+      "authentication": true,
+      "permissions": [
+        "USER_READ"
+      ],
+      "query": {
+        "templates": [
+          "paginationWithSearch"
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Lista paginada",
+          "bodyType": "paginatedEnvelope"
+        },
+        {
+          "status": 403,
+          "description": "Permissão insuficiente",
+          "bodyType": "errorEnvelope"
+        }
+      ],
+      "notes": "Aceita filtros extras via query (status, perfilId, etc.)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/usuarios/{id}",
+      "group": "Usuarios",
+      "summary": "Obtém usuário por ID",
+      "authentication": true,
+      "permissions": [
+        "USER_READ"
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Usuário encontrado",
+          "bodyType": "successEnvelope"
+        },
+        {
+          "status": 404,
+          "description": "Usuário não encontrado",
+          "bodyType": "errorEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/usuarios",
+      "group": "Usuarios",
+      "summary": "Cria usuário",
+      "authentication": true,
+      "permissions": [
+        "USER_CREATE"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "nomeCompleto",
+            "type": "string"
+          },
+          {
+            "name": "email",
+            "type": "string",
+            "format": "email"
+          },
+          {
+            "name": "senha",
+            "type": "string",
+            "minLength": 6
+          },
+          {
+            "name": "idPerfil",
+            "type": "integer"
+          }
+        ],
+        "optional": [
+          {
+            "name": "cpf",
+            "type": "string"
+          },
+          {
+            "name": "telefone",
+            "type": "string"
+          },
+          {
+            "name": "celular",
+            "type": "string"
+          }
+        ]
+      },
+      "responses": [
+        {
+          "status": 201,
+          "description": "Usuário criado",
+          "bodyType": "successEnvelope"
+        },
+        {
+          "status": 409,
+          "description": "Email ou CPF já utilizados",
+          "bodyType": "errorEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "PUT",
+      "path": "/api/usuarios/{id}",
+      "group": "Usuarios",
+      "summary": "Atualiza usuário",
+      "authentication": true,
+      "permissions": [
+        "USER_UPDATE"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [],
+        "optional": [
+          {
+            "name": "nomeCompleto",
+            "type": "string"
+          },
+          {
+            "name": "email",
+            "type": "string",
+            "format": "email"
+          },
+          {
+            "name": "cpf",
+            "type": "string"
+          },
+          {
+            "name": "telefone",
+            "type": "string"
+          },
+          {
+            "name": "celular",
+            "type": "string"
+          },
+          {
+            "name": "senha",
+            "type": "string",
+            "minLength": 6
+          },
+          {
+            "name": "idPerfil",
+            "type": "integer"
+          },
+          {
+            "name": "status",
+            "type": "string",
+            "enum": [
+              "ATIVO",
+              "INATIVO",
+              "BLOQUEADO"
+            ]
+          }
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Usuário atualizado",
+          "bodyType": "successEnvelope"
+        },
+        {
+          "status": 404,
+          "description": "Usuário não encontrado",
+          "bodyType": "errorEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/usuarios/{id}",
+      "group": "Usuarios",
+      "summary": "Remove usuário",
+      "authentication": true,
+      "permissions": [
+        "ADMIN"
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Usuário removido",
+          "bodyType": "simpleMessage"
+        },
+        {
+          "status": 404,
+          "description": "Usuário não encontrado",
+          "bodyType": "errorEnvelope"
+        }
+      ],
+      "notes": "Restrito a administradores"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/usuarios/{id}/status",
+      "group": "Usuarios",
+      "summary": "Atualiza status do usuário",
+      "authentication": true,
+      "permissions": [
+        "USER_UPDATE"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "status",
+            "type": "string",
+            "enum": [
+              "ATIVO",
+              "INATIVO",
+              "BLOQUEADO"
+            ]
+          }
+        ],
+        "optional": []
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Status atualizado",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/usuarios/perfil/{perfilId}",
+      "group": "Usuarios",
+      "summary": "Lista usuários por perfil",
+      "authentication": true,
+      "permissions": [
+        "USER_READ"
+      ],
+      "query": {
+        "templates": [
+          "pagination"
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Usuários do perfil",
+          "bodyType": "paginatedEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/usuarios/status/ativos",
+      "group": "Usuarios",
+      "summary": "Lista usuários ativos",
+      "authentication": true,
+      "permissions": [
+        "USER_READ"
+      ],
+      "query": {
+        "templates": [
+          "pagination"
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Usuários ativos",
+          "bodyType": "paginatedEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/usuarios/{id}/change-password",
+      "group": "Usuarios",
+      "summary": "Troca senha (admin)",
+      "authentication": true,
+      "permissions": [
+        "ADMIN"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "senhaAtual",
+            "type": "string"
+          },
+          {
+            "name": "novaSenha",
+            "type": "string",
+            "minLength": 6
+          }
+        ],
+        "optional": []
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Senha atualizada",
+          "bodyType": "simpleMessage"
+        },
+        {
+          "status": 400,
+          "description": "Senha atual inválida",
+          "bodyType": "errorEnvelope"
+        }
+      ],
+      "notes": "Utiliza mesma validação de senha atual"
+    },
+    {
+      "method": "GET",
+      "path": "/api/usuarios/search/query",
+      "group": "Usuarios",
+      "summary": "Busca usuários por termo",
+      "authentication": true,
+      "permissions": [
+        "USER_READ"
+      ],
+      "query": {
+        "templates": [
+          "pagination"
+        ],
+        "params": [
+          {
+            "name": "termo",
+            "type": "string",
+            "minLength": 1,
+            "description": "Termo obrigatório"
+          }
+        ]
+      },
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/usuarios/stats/overview",
+      "group": "Usuarios",
+      "summary": "Estatísticas gerais",
+      "authentication": true,
+      "permissions": [
+        "ADMIN"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/usuarios/{id}/reset-password",
+      "group": "Usuarios",
+      "summary": "Reset de senha por admin",
+      "authentication": true,
+      "permissions": [
+        "ADMIN"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/usuarios/{id}/permissions",
+      "group": "Usuarios",
+      "summary": "Lista permissões do usuário",
+      "authentication": true,
+      "permissions": [
+        "USER_READ"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/containers",
+      "group": "Containers",
+      "summary": "Lista containers com paginação",
+      "authentication": true,
+      "permissions": [
+        "CONTAINER_READ"
+      ],
+      "query": {
+        "templates": [
+          "paginationWithSearch"
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Lista de containers",
+          "bodyType": "paginatedEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/containers/{id}",
+      "group": "Containers",
+      "summary": "Obtém container por ID",
+      "authentication": true,
+      "permissions": [
+        "CONTAINER_READ"
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Container encontrado",
+          "bodyType": "successEnvelope"
+        },
+        {
+          "status": 404,
+          "description": "Container não encontrado",
+          "bodyType": "errorEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/containers",
+      "group": "Containers",
+      "summary": "Cria novo container",
+      "authentication": true,
+      "permissions": [
+        "CONTAINER_CREATE"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "numero",
+            "type": "string"
+          },
+          {
+            "name": "tipo",
+            "type": "integer",
+            "description": "ID do tipo de container"
+          },
+          {
+            "name": "clienteId",
+            "type": "integer"
+          }
+        ],
+        "optional": [
+          {
+            "name": "portoOrigemId",
+            "type": "integer"
+          },
+          {
+            "name": "portoDestinoId",
+            "type": "integer"
+          },
+          {
+            "name": "tamanho",
+            "type": "string"
+          },
+          {
+            "name": "peso",
+            "type": "number"
+          },
+          {
+            "name": "valor",
+            "type": "number"
+          },
+          {
+            "name": "origem",
+            "type": "string"
+          },
+          {
+            "name": "destino",
+            "type": "string"
+          },
+          {
+            "name": "dataEmbarque",
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "dataPrevisaoChegada",
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "observacoes",
+            "type": "string"
+          }
+        ]
+      },
+      "responses": [
+        {
+          "status": 201,
+          "description": "Container criado",
+          "bodyType": "successEnvelope"
+        },
+        {
+          "status": 409,
+          "description": "Número já cadastrado",
+          "bodyType": "errorEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "PUT",
+      "path": "/api/containers/{id}",
+      "group": "Containers",
+      "summary": "Atualiza container",
+      "authentication": true,
+      "permissions": [
+        "CONTAINER_UPDATE"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [],
+        "optional": [
+          {
+            "name": "numero",
+            "type": "string"
+          },
+          {
+            "name": "tipo",
+            "type": "integer"
+          },
+          {
+            "name": "clienteId",
+            "type": "integer"
+          },
+          {
+            "name": "status",
+            "type": "string",
+            "enum": [
+              "ativo",
+              "em_transito",
+              "entregue",
+              "inativo"
+            ]
+          },
+          {
+            "name": "portoOrigemId",
+            "type": "integer"
+          },
+          {
+            "name": "portoDestinoId",
+            "type": "integer"
+          },
+          {
+            "name": "tamanho",
+            "type": "string"
+          },
+          {
+            "name": "peso",
+            "type": "number"
+          },
+          {
+            "name": "valor",
+            "type": "number"
+          },
+          {
+            "name": "origem",
+            "type": "string"
+          },
+          {
+            "name": "destino",
+            "type": "string"
+          },
+          {
+            "name": "dataEmbarque",
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "dataPrevisaoChegada",
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "observacoes",
+            "type": "string"
+          }
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Container atualizado",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/containers/{id}",
+      "group": "Containers",
+      "summary": "Remove container",
+      "authentication": true,
+      "permissions": [
+        "CONTAINER_DELETE"
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Container removido",
+          "bodyType": "simpleMessage"
+        }
+      ]
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/containers/{id}/status",
+      "group": "Containers",
+      "summary": "Atualiza status do container",
+      "authentication": true,
+      "permissions": [
+        "CONTAINER_UPDATE"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "status",
+            "type": "string",
+            "enum": [
+              "ativo",
+              "em_transito",
+              "entregue",
+              "inativo"
+            ]
+          }
+        ],
+        "optional": []
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Status atualizado",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "PUT",
+      "path": "/api/containers/{id}/status",
+      "group": "Containers",
+      "summary": "Atualiza status (compatibilidade)",
+      "authentication": true,
+      "permissions": [
+        "CONTAINER_UPDATE"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "status",
+            "type": "string",
+            "enum": [
+              "ativo",
+              "em_transito",
+              "entregue",
+              "inativo"
+            ]
+          }
+        ],
+        "optional": []
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Status atualizado",
+          "bodyType": "successEnvelope"
+        }
+      ],
+      "notes": "Endpoint duplicado para clientes legados"
+    },
+    {
+      "method": "POST",
+      "path": "/api/containers/{id}/events",
+      "group": "Containers",
+      "summary": "Adiciona evento ao container",
+      "authentication": true,
+      "permissions": [
+        "CONTAINER_UPDATE"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "tipoEventoId",
+            "type": "integer"
+          },
+          {
+            "name": "descricao",
+            "type": "string"
+          },
+          {
+            "name": "dataEvento",
+            "type": "string",
+            "format": "date-time"
+          }
+        ],
+        "optional": [
+          {
+            "name": "localizacao",
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "type": "string"
+          }
+        ]
+      },
+      "responses": [
+        {
+          "status": 201,
+          "description": "Evento criado",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/containers/{id}/tracking",
+      "group": "Containers",
+      "summary": "Consulta rastreamento",
+      "authentication": true,
+      "permissions": [
+        "CONTAINER_READ"
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Dados de rastreamento",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/containers/search/query",
+      "group": "Containers",
+      "summary": "Busca containers",
+      "authentication": true,
+      "permissions": [
+        "CONTAINER_READ"
+      ],
+      "query": {
+        "templates": [
+          "pagination"
+        ],
+        "params": [
+          {
+            "name": "termo",
+            "type": "string",
+            "description": "Termo obrigatório"
+          }
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Resultados da busca",
+          "bodyType": "successEnvelope"
+        },
+        {
+          "status": 400,
+          "description": "Termo ausente",
+          "bodyType": "errorEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/containers/client/{clienteId}",
+      "group": "Containers",
+      "summary": "Lista containers por cliente",
+      "authentication": true,
+      "permissions": [
+        "CONTAINER_READ"
+      ],
+      "query": {
+        "templates": [
+          "pagination"
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Containers do cliente",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/containers/status/{status}",
+      "group": "Containers",
+      "summary": "Lista containers por status",
+      "authentication": true,
+      "permissions": [
+        "CONTAINER_READ"
+      ],
+      "query": {
+        "templates": [
+          "pagination"
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Containers filtrados",
+          "bodyType": "successEnvelope"
+        }
+      ],
+      "notes": "Status válidos: ativo, em_transito, entregue, inativo"
+    },
+    {
+      "method": "GET",
+      "path": "/api/containers/date-range/filter",
+      "group": "Containers",
+      "summary": "Lista containers em intervalo de datas",
+      "authentication": true,
+      "permissions": [
+        "CONTAINER_READ"
+      ],
+      "query": {
+        "templates": [
+          "pagination",
+          "dateRange"
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Containers no período",
+          "bodyType": "successEnvelope"
+        },
+        {
+          "status": 400,
+          "description": "Datas inválidas",
+          "bodyType": "errorEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/containers/number/{numero}",
+      "group": "Containers",
+      "summary": "Busca container por número",
+      "authentication": true,
+      "permissions": [
+        "CONTAINER_READ"
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Container encontrado",
+          "bodyType": "successEnvelope"
+        },
+        {
+          "status": 404,
+          "description": "Container não encontrado",
+          "bodyType": "errorEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/containers/stats/overview",
+      "group": "Containers",
+      "summary": "Estatísticas de containers",
+      "authentication": true,
+      "permissions": [
+        "CONTAINER_READ"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/containers/{id}/documents",
+      "group": "Containers",
+      "summary": "Lista documentos do container",
+      "authentication": true,
+      "permissions": [
+        "CONTAINER_READ"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/containers/{id}/documents",
+      "group": "Containers",
+      "summary": "Anexa documento ao container",
+      "authentication": true,
+      "permissions": [
+        "CONTAINER_UPDATE"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/averbacoes",
+      "group": "Averbações",
+      "summary": "Lista averbações",
+      "authentication": true,
+      "permissions": [
+        "AVERBACAO_READ"
+      ],
+      "query": {
+        "templates": [
+          "paginationWithSearch"
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Lista paginada",
+          "bodyType": "paginatedEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/averbacoes/{id}",
+      "group": "Averbações",
+      "summary": "Detalhes da averbação",
+      "authentication": true,
+      "permissions": [
+        "AVERBACAO_READ"
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Averbação encontrada",
+          "bodyType": "successEnvelope"
+        },
+        {
+          "status": 404,
+          "description": "Averbação não encontrada",
+          "bodyType": "errorEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/averbacoes",
+      "group": "Averbações",
+      "summary": "Cria nova averbação",
+      "authentication": true,
+      "permissions": [
+        "AVERBACAO_CREATE"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "numero",
+            "type": "string",
+            "description": "Identificador interno"
+          },
+          {
+            "name": "clienteId",
+            "type": "integer"
+          },
+          {
+            "name": "seguradoraId",
+            "type": "integer"
+          },
+          {
+            "name": "valorMercadoria",
+            "type": "number"
+          },
+          {
+            "name": "valorPremio",
+            "type": "number"
+          }
+        ],
+        "optional": [
+          {
+            "name": "numeroContainer",
+            "type": "string"
+          },
+          {
+            "name": "descricaoMercadoria",
+            "type": "string"
+          },
+          {
+            "name": "dataEmbarque",
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "dataChegadaPrevista",
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "observacoes",
+            "type": "string"
+          }
+        ]
+      },
+      "responses": [
+        {
+          "status": 201,
+          "description": "Averbação criada",
+          "bodyType": "successEnvelope"
+        },
+        {
+          "status": 400,
+          "description": "Dados inválidos",
+          "bodyType": "errorEnvelope"
+        }
+      ],
+      "notes": "numeroContainer aceito e mapeado para o campo interno numero"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/averbacoes/{id}",
+      "group": "Averbações",
+      "summary": "Atualiza averbação",
+      "authentication": true,
+      "permissions": [
+        "AVERBACAO_UPDATE"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [],
+        "optional": [
+          {
+            "name": "clienteId",
+            "type": "integer"
+          },
+          {
+            "name": "seguradoraId",
+            "type": "integer"
+          },
+          {
+            "name": "valorMercadoria",
+            "type": "number"
+          },
+          {
+            "name": "valorPremio",
+            "type": "number"
+          },
+          {
+            "name": "status",
+            "type": "string",
+            "enum": [
+              "PENDENTE",
+              "EM_ANALISE",
+              "APROVADO",
+              "REJEITADO",
+              "CANCELADO"
+            ]
+          },
+          {
+            "name": "descricaoMercadoria",
+            "type": "string"
+          },
+          {
+            "name": "observacoes",
+            "type": "string"
+          }
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Averbação atualizada",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/averbacoes/{id}",
+      "group": "Averbações",
+      "summary": "Remove averbação",
+      "authentication": true,
+      "permissions": [
+        "AVERBACAO_DELETE"
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Averbação removida",
+          "bodyType": "simpleMessage"
+        }
+      ]
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/averbacoes/{id}/status",
+      "group": "Averbações",
+      "summary": "Atualiza status",
+      "authentication": true,
+      "permissions": [
+        "AVERBACAO_UPDATE"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "status",
+            "type": "string",
+            "enum": [
+              "PENDENTE",
+              "EM_ANALISE",
+              "APROVADO",
+              "REJEITADO",
+              "CANCELADO"
+            ]
+          }
+        ],
+        "optional": []
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Status atualizado",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/averbacoes/search/query",
+      "group": "Averbações",
+      "summary": "Busca averbações",
+      "authentication": true,
+      "permissions": [
+        "AVERBACAO_READ"
+      ],
+      "query": {
+        "templates": [
+          "pagination"
+        ],
+        "params": [
+          {
+            "name": "termo",
+            "type": "string",
+            "description": "Termo obrigatório"
+          }
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Resultados",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/averbacoes/client/{clienteId}",
+      "group": "Averbações",
+      "summary": "Averbações por cliente",
+      "authentication": true,
+      "permissions": [
+        "AVERBACAO_READ"
+      ],
+      "query": {
+        "templates": [
+          "pagination"
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Lista do cliente",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/averbacoes/status/{status}",
+      "group": "Averbações",
+      "summary": "Averbações por status",
+      "authentication": true,
+      "permissions": [
+        "AVERBACAO_READ"
+      ],
+      "query": {
+        "templates": [
+          "pagination"
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Lista filtrada",
+          "bodyType": "successEnvelope"
+        }
+      ],
+      "notes": "Status válidos: PENDENTE, EM_ANALISE, APROVADO, REJEITADO, CANCELADO"
+    },
+    {
+      "method": "GET",
+      "path": "/api/averbacoes/date-range/filter",
+      "group": "Averbações",
+      "summary": "Averbações por período",
+      "authentication": true,
+      "permissions": [
+        "AVERBACAO_READ"
+      ],
+      "query": {
+        "templates": [
+          "pagination",
+          "dateRange"
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Lista no período",
+          "bodyType": "successEnvelope"
+        },
+        {
+          "status": 400,
+          "description": "Datas inválidas",
+          "bodyType": "errorEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/averbacoes/statistics/overview",
+      "group": "Averbações",
+      "summary": "Estatísticas de averbações",
+      "authentication": true,
+      "permissions": [
+        "AVERBACAO_READ"
+      ],
+      "query": {
+        "templates": [
+          "dateRange"
+        ],
+        "params": [
+          {
+            "name": "clienteId",
+            "type": "integer",
+            "optional": true
+          },
+          {
+            "name": "seguradoraId",
+            "type": "integer",
+            "optional": true
+          }
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Dados agregados",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/averbacoes/expiring/list",
+      "group": "Averbações",
+      "summary": "Averbações próximas ao vencimento",
+      "authentication": true,
+      "permissions": [
+        "AVERBACAO_READ"
+      ],
+      "query": {
+        "templates": [
+          "pagination"
+        ],
+        "params": [
+          {
+            "name": "dias",
+            "type": "integer",
+            "default": 30,
+            "description": "Janela em dias"
+          }
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Averbações próximas",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/averbacoes/number/{numero}",
+      "group": "Averbações",
+      "summary": "Busca por número",
+      "authentication": true,
+      "permissions": [
+        "AVERBACAO_READ"
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Averbação encontrada",
+          "bodyType": "successEnvelope"
+        },
+        {
+          "status": 404,
+          "description": "Não encontrada",
+          "bodyType": "errorEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/averbacoes/{id}/documents",
+      "group": "Averbações",
+      "summary": "Upload de documento",
+      "authentication": true,
+      "permissions": [
+        "AVERBACAO_UPDATE"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "tipo",
+            "type": "string"
+          }
+        ],
+        "optional": []
+      },
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/averbacoes/{id}/documents",
+      "group": "Averbações",
+      "summary": "Lista documentos",
+      "authentication": true,
+      "permissions": [
+        "AVERBACAO_READ"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/averbacoes/{id}/documents/{documentId}",
+      "group": "Averbações",
+      "summary": "Remove documento",
+      "authentication": true,
+      "permissions": [
+        "AVERBACAO_UPDATE"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/averbacoes/{id}/history",
+      "group": "Averbações",
+      "summary": "Histórico da averbação",
+      "authentication": true,
+      "permissions": [
+        "AVERBACAO_READ"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/averbacoes/{id}/approve",
+      "group": "Averbações",
+      "summary": "Aprova averbação",
+      "authentication": true,
+      "permissions": [
+        "AVERBACAO_APPROVE"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/averbacoes/{id}/reject",
+      "group": "Averbações",
+      "summary": "Rejeita averbação",
+      "authentication": true,
+      "permissions": [
+        "AVERBACAO_APPROVE"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "motivo",
+            "type": "string"
+          }
+        ],
+        "optional": []
+      },
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/clientes",
+      "group": "Clientes",
+      "summary": "Lista clientes",
+      "authentication": true,
+      "permissions": [
+        "CLIENT_READ"
+      ],
+      "query": {
+        "templates": [
+          "paginationWithSearch"
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Lista paginada",
+          "bodyType": "paginatedEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/clientes/{id}",
+      "group": "Clientes",
+      "summary": "Detalha cliente",
+      "authentication": true,
+      "permissions": [
+        "CLIENT_READ"
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Cliente encontrado",
+          "bodyType": "successEnvelope"
+        },
+        {
+          "status": 404,
+          "description": "Cliente não encontrado",
+          "bodyType": "errorEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/clientes",
+      "group": "Clientes",
+      "summary": "Cria cliente",
+      "authentication": true,
+      "permissions": [
+        "CLIENT_CREATE"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "razaoSocial",
+            "type": "string"
+          },
+          {
+            "name": "cnpj",
+            "type": "string"
+          },
+          {
+            "name": "email",
+            "type": "string",
+            "format": "email"
+          }
+        ],
+        "optional": [
+          {
+            "name": "nomeFantasia",
+            "type": "string"
+          },
+          {
+            "name": "telefone",
+            "type": "string"
+          },
+          {
+            "name": "site",
+            "type": "string",
+            "format": "uri"
+          },
+          {
+            "name": "endereco",
+            "type": "string"
+          },
+          {
+            "name": "numero",
+            "type": "string"
+          },
+          {
+            "name": "complemento",
+            "type": "string"
+          },
+          {
+            "name": "bairro",
+            "type": "string"
+          },
+          {
+            "name": "cidade",
+            "type": "string"
+          },
+          {
+            "name": "estado",
+            "type": "string"
+          },
+          {
+            "name": "cep",
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "type": "string",
+            "enum": [
+              "ATIVO",
+              "INATIVO",
+              "SUSPENSO"
+            ]
+          }
+        ]
+      },
+      "responses": [
+        {
+          "status": 201,
+          "description": "Cliente criado",
+          "bodyType": "successEnvelope"
+        },
+        {
+          "status": 409,
+          "description": "CNPJ ou email já cadastrado",
+          "bodyType": "errorEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "PUT",
+      "path": "/api/clientes/{id}",
+      "group": "Clientes",
+      "summary": "Atualiza cliente",
+      "authentication": true,
+      "permissions": [
+        "CLIENT_UPDATE"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [],
+        "optional": [
+          {
+            "name": "razaoSocial",
+            "type": "string"
+          },
+          {
+            "name": "nomeFantasia",
+            "type": "string"
+          },
+          {
+            "name": "cnpj",
+            "type": "string"
+          },
+          {
+            "name": "email",
+            "type": "string",
+            "format": "email"
+          },
+          {
+            "name": "telefone",
+            "type": "string"
+          },
+          {
+            "name": "site",
+            "type": "string",
+            "format": "uri"
+          },
+          {
+            "name": "endereco",
+            "type": "string"
+          },
+          {
+            "name": "numero",
+            "type": "string"
+          },
+          {
+            "name": "complemento",
+            "type": "string"
+          },
+          {
+            "name": "bairro",
+            "type": "string"
+          },
+          {
+            "name": "cidade",
+            "type": "string"
+          },
+          {
+            "name": "estado",
+            "type": "string"
+          },
+          {
+            "name": "cep",
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "type": "string",
+            "enum": [
+              "ATIVO",
+              "INATIVO",
+              "SUSPENSO"
+            ]
+          }
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Cliente atualizado",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/clientes/{id}",
+      "group": "Clientes",
+      "summary": "Remove cliente",
+      "authentication": true,
+      "permissions": [
+        "CLIENT_DELETE"
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Cliente removido",
+          "bodyType": "simpleMessage"
+        }
+      ]
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/clientes/{id}/status",
+      "group": "Clientes",
+      "summary": "Atualiza status do cliente",
+      "authentication": true,
+      "permissions": [
+        "CLIENT_UPDATE"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "status",
+            "type": "string",
+            "enum": [
+              "ATIVO",
+              "INATIVO",
+              "SUSPENSO"
+            ]
+          }
+        ],
+        "optional": []
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Status atualizado",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/clientes/{id}/filiais",
+      "group": "Clientes",
+      "summary": "Cliente com filiais",
+      "authentication": true,
+      "permissions": [
+        "CLIENT_READ"
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Cliente e filiais",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/clientes/status/ativos",
+      "group": "Clientes",
+      "summary": "Clientes ativos",
+      "authentication": true,
+      "permissions": [
+        "CLIENT_READ"
+      ],
+      "query": {
+        "templates": [
+          "pagination"
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Lista de clientes ativos",
+          "bodyType": "paginatedEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/clientes/search/query",
+      "group": "Clientes",
+      "summary": "Busca clientes",
+      "authentication": true,
+      "permissions": [
+        "CLIENT_READ"
+      ],
+      "query": {
+        "templates": [
+          "pagination"
+        ],
+        "params": [
+          {
+            "name": "termo",
+            "type": "string",
+            "description": "Termo obrigatório"
+          }
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Resultados da busca",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/clientes/cnpj/{cnpj}",
+      "group": "Clientes",
+      "summary": "Busca cliente por CNPJ",
+      "authentication": true,
+      "permissions": [
+        "CLIENT_READ"
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Cliente encontrado",
+          "bodyType": "successEnvelope"
+        },
+        {
+          "status": 404,
+          "description": "Cliente não encontrado",
+          "bodyType": "errorEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/clientes/{id}/statistics",
+      "group": "Clientes",
+      "summary": "Estatísticas do cliente",
+      "authentication": true,
+      "permissions": [
+        "CLIENT_READ"
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Dados estatísticos",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/clientes/stats/overview",
+      "group": "Clientes",
+      "summary": "Estatísticas gerais",
+      "authentication": true,
+      "permissions": [
+        "CLIENT_READ"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/clientes/{id}/containers",
+      "group": "Clientes",
+      "summary": "Containers do cliente",
+      "authentication": true,
+      "permissions": [
+        "CLIENT_READ",
+        "CONTAINER_READ"
+      ],
+      "query": {
+        "templates": [
+          "pagination"
+        ]
+      },
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/clientes/{id}/averbacoes",
+      "group": "Clientes",
+      "summary": "Averbações do cliente",
+      "authentication": true,
+      "permissions": [
+        "CLIENT_READ",
+        "AVERBACAO_READ"
+      ],
+      "query": {
+        "templates": [
+          "pagination"
+        ]
+      },
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/clientes/{id}/filiais",
+      "group": "Clientes",
+      "summary": "Cria filial",
+      "authentication": true,
+      "permissions": [
+        "CLIENT_UPDATE"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "nome",
+            "type": "string"
+          },
+          {
+            "name": "endereco",
+            "type": "string"
+          }
+        ],
+        "optional": []
+      },
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "PUT",
+      "path": "/api/clientes/{clienteId}/filiais/{filialId}",
+      "group": "Clientes",
+      "summary": "Atualiza filial",
+      "authentication": true,
+      "permissions": [
+        "CLIENT_UPDATE"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/clientes/{clienteId}/filiais/{filialId}",
+      "group": "Clientes",
+      "summary": "Remove filial",
+      "authentication": true,
+      "permissions": [
+        "CLIENT_DELETE"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/dashboard/stats",
+      "group": "Dashboard",
+      "summary": "Resumo estatístico do dashboard",
+      "authentication": true,
+      "permissions": [
+        "DASHBOARD_READ"
+      ],
+      "query": {
+        "params": [
+          {
+            "name": "periodo",
+            "type": "integer",
+            "default": 30,
+            "description": "Número de dias"
+          }
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Estatísticas detalhadas",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/dashboard/operations",
+      "group": "Dashboard",
+      "summary": "Dados operacionais do dashboard",
+      "authentication": true,
+      "permissions": [
+        "DASHBOARD_READ"
+      ],
+      "query": {
+        "templates": [
+          "pagination"
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Dados operacionais",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/dashboard/actions",
+      "group": "Dashboard",
+      "summary": "Ações pendentes",
+      "authentication": true,
+      "permissions": [
+        "DASHBOARD_READ"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/dashboard/overview",
+      "group": "Dashboard",
+      "summary": "Visão geral",
+      "authentication": true,
+      "permissions": [
+        "DASHBOARD_READ"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/dashboard/charts/{type}",
+      "group": "Dashboard",
+      "summary": "Dados para gráficos",
+      "authentication": true,
+      "permissions": [
+        "DASHBOARD_READ"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/dashboard/alerts",
+      "group": "Dashboard",
+      "summary": "Alertas do sistema",
+      "authentication": true,
+      "permissions": [
+        "DASHBOARD_READ"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/dashboard/notifications",
+      "group": "Dashboard",
+      "summary": "Notificações do usuário",
+      "authentication": true,
+      "permissions": [
+        "DASHBOARD_READ"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "PUT",
+      "path": "/api/dashboard/notifications/{id}/read",
+      "group": "Dashboard",
+      "summary": "Marca notificação como lida",
+      "authentication": true,
+      "permissions": [
+        "DASHBOARD_UPDATE"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/dashboard/performance",
+      "group": "Dashboard",
+      "summary": "Métricas de performance",
+      "authentication": true,
+      "permissions": [
+        "ADMIN"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/dashboard/widgets",
+      "group": "Dashboard",
+      "summary": "Widgets do dashboard",
+      "authentication": true,
+      "permissions": [
+        "DASHBOARD_READ"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "PUT",
+      "path": "/api/dashboard/widgets",
+      "group": "Dashboard",
+      "summary": "Atualiza widgets do dashboard",
+      "authentication": true,
+      "permissions": [
+        "DASHBOARD_UPDATE"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/historico",
+      "group": "Histórico",
+      "summary": "Consulta histórico de alterações",
+      "authentication": true,
+      "permissions": [
+        "HISTORICO_READ"
+      ],
+      "query": {
+        "templates": [
+          "pagination"
+        ],
+        "params": [
+          {
+            "name": "tabela",
+            "type": "string",
+            "optional": true
+          },
+          {
+            "name": "operacao",
+            "type": "string",
+            "optional": true,
+            "enum": [
+              "CREATE",
+              "UPDATE",
+              "DELETE"
+            ]
+          },
+          {
+            "name": "usuario",
+            "type": "integer",
+            "optional": true
+          },
+          {
+            "name": "dataInicio",
+            "type": "string",
+            "format": "date-time",
+            "optional": true
+          },
+          {
+            "name": "dataFim",
+            "type": "string",
+            "format": "date-time",
+            "optional": true
+          }
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Histórico paginado",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/historico/stats",
+      "group": "Histórico",
+      "summary": "Estatísticas do histórico",
+      "authentication": true,
+      "permissions": [
+        "HISTORICO_READ"
+      ],
+      "query": {
+        "params": [
+          {
+            "name": "periodo",
+            "type": "integer",
+            "default": 30,
+            "description": "Dias"
+          }
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Estatísticas agregadas",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/notificacoes/nao-lidas",
+      "group": "Notificações",
+      "summary": "Lista notificações não lidas do usuário",
+      "authentication": true,
+      "permissions": [
+        "NOTIFICACAO_READ"
+      ],
+      "query": {
+        "templates": [
+          "pagination"
+        ],
+        "params": [
+          {
+            "name": "tipo",
+            "type": "string",
+            "optional": true,
+            "enum": [
+              "info",
+              "alerta",
+              "erro",
+              "sucesso"
+            ]
+          },
+          {
+            "name": "prioridade",
+            "type": "string",
+            "optional": true,
+            "enum": [
+              "baixa",
+              "media",
+              "alta",
+              "critica"
+            ]
+          }
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Notificações não lidas",
+          "bodyType": "successEnvelope"
+        },
+        {
+          "status": 403,
+          "description": "Permissão insuficiente",
+          "bodyType": "errorEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/notificacoes/stats",
+      "group": "Notificações",
+      "summary": "Estatísticas de notificações",
+      "authentication": true,
+      "permissions": [
+        "NOTIFICACAO_READ"
+      ],
+      "query": {
+        "params": [
+          {
+            "name": "periodo",
+            "type": "integer",
+            "default": 30,
+            "description": "Dias"
+          }
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Resumo estatístico",
+          "bodyType": "successEnvelope"
+        },
+        {
+          "status": 403,
+          "description": "Permissão insuficiente",
+          "bodyType": "errorEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "PUT",
+      "path": "/api/notificacoes/{id}/lida",
+      "group": "Notificações",
+      "summary": "Marca notificação como lida",
+      "authentication": true,
+      "permissions": [
+        "NOTIFICACAO_UPDATE"
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Notificação atualizada",
+          "bodyType": "simpleMessage"
+        },
+        {
+          "status": 404,
+          "description": "Notificação não encontrada",
+          "bodyType": "errorEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/permissoes",
+      "group": "Permissões",
+      "summary": "Lista permissões",
+      "authentication": true,
+      "permissions": [
+        "ADMIN"
+      ],
+      "query": {
+        "templates": [
+          "paginationWithSearch"
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Lista paginada",
+          "bodyType": "paginatedEnvelope"
+        }
+      ],
+      "notes": "Somente administradores"
+    },
+    {
+      "method": "GET",
+      "path": "/api/permissoes/{id}",
+      "group": "Permissões",
+      "summary": "Obtém permissão por ID",
+      "authentication": true,
+      "permissions": [
+        "ADMIN"
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Permissão encontrada",
+          "bodyType": "successEnvelope"
+        },
+        {
+          "status": 404,
+          "description": "Permissão não encontrada",
+          "bodyType": "errorEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/permissoes",
+      "group": "Permissões",
+      "summary": "Cria nova permissão",
+      "authentication": true,
+      "permissions": [
+        "ADMIN"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "codigo",
+            "type": "string"
+          },
+          {
+            "name": "nome",
+            "type": "string"
+          },
+          {
+            "name": "modulo",
+            "type": "string"
+          }
+        ],
+        "optional": [
+          {
+            "name": "descricao",
+            "type": "string"
+          },
+          {
+            "name": "acao",
+            "type": "string"
+          }
+        ]
+      },
+      "responses": [
+        {
+          "status": 201,
+          "description": "Permissão criada",
+          "bodyType": "successEnvelope"
+        },
+        {
+          "status": 409,
+          "description": "Código já utilizado",
+          "bodyType": "errorEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "PUT",
+      "path": "/api/permissoes/{id}",
+      "group": "Permissões",
+      "summary": "Atualiza permissão",
+      "authentication": true,
+      "permissions": [
+        "ADMIN"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [],
+        "optional": [
+          {
+            "name": "nome",
+            "type": "string"
+          },
+          {
+            "name": "descricao",
+            "type": "string"
+          },
+          {
+            "name": "modulo",
+            "type": "string"
+          },
+          {
+            "name": "acao",
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "type": "string",
+            "enum": [
+              "ATIVO",
+              "INATIVO"
+            ]
+          }
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Permissão atualizada",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/permissoes/{id}",
+      "group": "Permissões",
+      "summary": "Remove permissão",
+      "authentication": true,
+      "permissions": [
+        "ADMIN"
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Permissão removida",
+          "bodyType": "simpleMessage"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/permissoes/user/{userId}",
+      "group": "Permissões",
+      "summary": "Permissões do usuário",
+      "authentication": true,
+      "permissions": [
+        "PERMISSION_READ"
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Lista de permissões",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/permissoes/profile/{profileId}",
+      "group": "Permissões",
+      "summary": "Permissões do perfil",
+      "authentication": true,
+      "permissions": [
+        "PERMISSION_READ"
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Permissões do perfil",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/permissoes/module/{module}",
+      "group": "Permissões",
+      "summary": "Permissões por módulo",
+      "authentication": true,
+      "permissions": [
+        "PERMISSION_READ"
+      ],
+      "query": {
+        "templates": [
+          "pagination"
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Permissões filtradas",
+          "bodyType": "paginatedEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/permissoes/modules/list",
+      "group": "Permissões",
+      "summary": "Módulos com permissões",
+      "authentication": true,
+      "permissions": [
+        "PERMISSION_READ"
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Módulos e permissões",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/permissoes/active/list",
+      "group": "Permissões",
+      "summary": "Permissões ativas",
+      "authentication": true,
+      "permissions": [
+        "PERMISSION_READ"
+      ],
+      "query": {
+        "templates": [
+          "pagination"
+        ],
+        "params": [
+          {
+            "name": "modulo",
+            "type": "string",
+            "optional": true
+          }
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Permissões ativas",
+          "bodyType": "paginatedEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/permissoes/profile/{profileId}/assign",
+      "group": "Permissões",
+      "summary": "Atribui permissões a um perfil",
+      "authentication": true,
+      "permissions": [
+        "ADMIN"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "permissaoIds",
+            "type": "array",
+            "itemsType": "integer"
+          }
+        ],
+        "optional": []
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Permissões atribuídas",
+          "bodyType": "simpleMessage"
+        }
+      ]
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/permissoes/profile/{profileId}/remove",
+      "group": "Permissões",
+      "summary": "Remove permissões de um perfil",
+      "authentication": true,
+      "permissions": [
+        "ADMIN"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "permissaoIds",
+            "type": "array",
+            "itemsType": "integer"
+          }
+        ],
+        "optional": []
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Permissões removidas",
+          "bodyType": "simpleMessage"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/permissoes/code/{codigo}",
+      "group": "Permissões",
+      "summary": "Busca permissão por código",
+      "authentication": true,
+      "permissions": [
+        "PERMISSION_READ"
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Permissão encontrada",
+          "bodyType": "successEnvelope"
+        },
+        {
+          "status": 404,
+          "description": "Permissão não encontrada",
+          "bodyType": "errorEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/permissoes/check",
+      "group": "Permissões",
+      "summary": "Verifica se usuário possui permissão",
+      "authentication": true,
+      "permissions": [],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "codigo",
+            "type": "string"
+          }
+        ],
+        "optional": []
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Resultado da checagem",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/permissoes/user/{userId}/modules",
+      "group": "Permissões",
+      "summary": "Permissões do usuário agrupadas por módulo",
+      "authentication": true,
+      "permissions": [
+        "PERMISSION_READ"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/permissoes/stats/overview",
+      "group": "Permissões",
+      "summary": "Estatísticas de permissões",
+      "authentication": true,
+      "permissions": [
+        "ADMIN"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/permissoes/bulk/create",
+      "group": "Permissões",
+      "summary": "Criação em lote",
+      "authentication": true,
+      "permissions": [
+        "ADMIN"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "permissoes",
+            "type": "array",
+            "itemsType": "object"
+          }
+        ],
+        "optional": []
+      },
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "PUT",
+      "path": "/api/permissoes/bulk/update",
+      "group": "Permissões",
+      "summary": "Atualização em lote",
+      "authentication": true,
+      "permissions": [
+        "ADMIN"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "permissoes",
+            "type": "array",
+            "itemsType": "object"
+          }
+        ],
+        "optional": []
+      },
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/seguradoras",
+      "group": "Seguradoras",
+      "summary": "Lista seguradoras",
+      "authentication": true,
+      "permissions": [
+        "SEGURADORA_READ"
+      ],
+      "query": {
+        "templates": [
+          "paginationWithSearch"
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Lista paginada",
+          "bodyType": "paginatedEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/seguradoras/{id}",
+      "group": "Seguradoras",
+      "summary": "Detalhes da seguradora",
+      "authentication": true,
+      "permissions": [
+        "SEGURADORA_READ"
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Seguradora encontrada",
+          "bodyType": "successEnvelope"
+        },
+        {
+          "status": 404,
+          "description": "Seguradora não encontrada",
+          "bodyType": "errorEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/seguradoras",
+      "group": "Seguradoras",
+      "summary": "Cria seguradora",
+      "authentication": true,
+      "permissions": [
+        "SEGURADORA_CREATE"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "nome",
+            "type": "string"
+          },
+          {
+            "name": "cnpj",
+            "type": "string"
+          },
+          {
+            "name": "email",
+            "type": "string",
+            "format": "email"
+          }
+        ],
+        "optional": [
+          {
+            "name": "telefone",
+            "type": "string"
+          },
+          {
+            "name": "susep",
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "type": "string",
+            "enum": [
+              "ATIVO",
+              "INATIVO",
+              "SUSPENSO"
+            ]
+          }
+        ]
+      },
+      "responses": [
+        {
+          "status": 201,
+          "description": "Seguradora criada",
+          "bodyType": "successEnvelope"
+        },
+        {
+          "status": 409,
+          "description": "CNPJ já cadastrado",
+          "bodyType": "errorEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "PUT",
+      "path": "/api/seguradoras/{id}",
+      "group": "Seguradoras",
+      "summary": "Atualiza seguradora",
+      "authentication": true,
+      "permissions": [
+        "SEGURADORA_UPDATE"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [],
+        "optional": [
+          {
+            "name": "nome",
+            "type": "string"
+          },
+          {
+            "name": "cnpj",
+            "type": "string"
+          },
+          {
+            "name": "email",
+            "type": "string",
+            "format": "email"
+          },
+          {
+            "name": "telefone",
+            "type": "string"
+          },
+          {
+            "name": "susep",
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "type": "string",
+            "enum": [
+              "ATIVO",
+              "INATIVO",
+              "SUSPENSO"
+            ]
+          }
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Seguradora atualizada",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/seguradoras/{id}",
+      "group": "Seguradoras",
+      "summary": "Remove seguradora",
+      "authentication": true,
+      "permissions": [
+        "SEGURADORA_DELETE"
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Seguradora removida",
+          "bodyType": "simpleMessage"
+        }
+      ]
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/seguradoras/{id}/status",
+      "group": "Seguradoras",
+      "summary": "Atualiza status da seguradora",
+      "authentication": true,
+      "permissions": [
+        "SEGURADORA_UPDATE"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "status",
+            "type": "string",
+            "enum": [
+              "ATIVO",
+              "INATIVO",
+              "SUSPENSO"
+            ]
+          }
+        ],
+        "optional": []
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Status atualizado",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/seguradoras/search/query",
+      "group": "Seguradoras",
+      "summary": "Busca seguradoras",
+      "authentication": true,
+      "permissions": [
+        "SEGURADORA_READ"
+      ],
+      "query": {
+        "templates": [
+          "pagination"
+        ],
+        "params": [
+          {
+            "name": "termo",
+            "type": "string",
+            "description": "Termo obrigatório"
+          }
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Resultados",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/seguradoras/active/list",
+      "group": "Seguradoras",
+      "summary": "Seguradoras ativas",
+      "authentication": true,
+      "permissions": [
+        "SEGURADORA_READ"
+      ],
+      "query": {
+        "templates": [
+          "pagination"
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Seguradoras ativas",
+          "bodyType": "paginatedEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/seguradoras/{id}/statistics",
+      "group": "Seguradoras",
+      "summary": "Estatísticas da seguradora",
+      "authentication": true,
+      "permissions": [
+        "SEGURADORA_READ"
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Dados estatísticos",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/seguradoras/cnpj/{cnpj}",
+      "group": "Seguradoras",
+      "summary": "Busca seguradora por CNPJ",
+      "authentication": true,
+      "permissions": [
+        "SEGURADORA_READ"
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Seguradora encontrada",
+          "bodyType": "successEnvelope"
+        },
+        {
+          "status": 404,
+          "description": "Não encontrada",
+          "bodyType": "errorEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/seguradoras/stats/general",
+      "group": "Seguradoras",
+      "summary": "Estatísticas gerais",
+      "authentication": true,
+      "permissions": [
+        "SEGURADORA_READ"
+      ],
+      "query": {
+        "templates": [
+          "dateRange"
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Estatísticas gerais",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/seguradoras/status/{status}",
+      "group": "Seguradoras",
+      "summary": "Seguradoras por status",
+      "authentication": true,
+      "permissions": [
+        "SEGURADORA_READ"
+      ],
+      "query": {
+        "templates": [
+          "pagination"
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Lista filtrada",
+          "bodyType": "paginatedEnvelope"
+        }
+      ],
+      "notes": "Status válidos: ATIVO, INATIVO, SUSPENSO"
+    },
+    {
+      "method": "GET",
+      "path": "/api/seguradoras/policies/count",
+      "group": "Seguradoras",
+      "summary": "Seguradoras com contagem de apólices",
+      "authentication": true,
+      "permissions": [
+        "SEGURADORA_READ"
+      ],
+      "query": {
+        "templates": [
+          "pagination"
+        ]
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Lista com contagem",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/seguradoras/{id}/contacts",
+      "group": "Seguradoras",
+      "summary": "Contatos da seguradora",
+      "authentication": true,
+      "permissions": [
+        "SEGURADORA_READ"
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Contatos",
+          "bodyType": "successEnvelope"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/seguradoras/{id}/contacts",
+      "group": "Seguradoras",
+      "summary": "Cria contato da seguradora",
+      "authentication": true,
+      "permissions": [
+        "SEGURADORA_UPDATE"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "nome",
+            "type": "string"
+          },
+          {
+            "name": "email",
+            "type": "string",
+            "format": "email"
+          },
+          {
+            "name": "telefone",
+            "type": "string"
+          }
+        ],
+        "optional": []
+      },
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "PUT",
+      "path": "/api/seguradoras/{id}/contacts/{contactId}",
+      "group": "Seguradoras",
+      "summary": "Atualiza contato",
+      "authentication": true,
+      "permissions": [
+        "SEGURADORA_UPDATE"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/seguradoras/{id}/contacts/{contactId}",
+      "group": "Seguradoras",
+      "summary": "Remove contato",
+      "authentication": true,
+      "permissions": [
+        "SEGURADORA_UPDATE"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/seguradoras/{id}/averbacoes",
+      "group": "Seguradoras",
+      "summary": "Averbações da seguradora",
+      "authentication": true,
+      "permissions": [
+        "SEGURADORA_READ",
+        "AVERBACAO_READ"
+      ],
+      "query": {
+        "templates": [
+          "pagination"
+        ]
+      },
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/seguradoras/{id}/performance",
+      "group": "Seguradoras",
+      "summary": "Performance da seguradora",
+      "authentication": true,
+      "permissions": [
+        "SEGURADORA_READ"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/seguradoras/{id}/activate",
+      "group": "Seguradoras",
+      "summary": "Ativa seguradora",
+      "authentication": true,
+      "permissions": [
+        "SEGURADORA_UPDATE"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/seguradoras/{id}/deactivate",
+      "group": "Seguradoras",
+      "summary": "Desativa seguradora",
+      "authentication": true,
+      "permissions": [
+        "SEGURADORA_UPDATE"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "motivo",
+            "type": "string"
+          }
+        ],
+        "optional": []
+      },
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/upload/document",
+      "group": "Upload",
+      "summary": "Upload de documento genérico",
+      "authentication": true,
+      "permissions": [
+        "UPLOAD_CREATE"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "tipo",
+            "type": "string"
+          },
+          {
+            "name": "entidadeId",
+            "type": "integer"
+          },
+          {
+            "name": "entidadeTipo",
+            "type": "string",
+            "enum": [
+              "CONTAINER",
+              "AVERBACAO",
+              "CLIENTE",
+              "SEGURADORA"
+            ]
+          }
+        ],
+        "optional": []
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Upload realizado",
+          "bodyType": "uploadResult"
+        }
+      ],
+      "notes": "Retorna apenas a URL do arquivo gerado"
+    },
+    {
+      "method": "POST",
+      "path": "/api/upload",
+      "group": "Upload",
+      "summary": "Upload de documento (legado)",
+      "authentication": true,
+      "permissions": [
+        "UPLOAD_CREATE"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "tipo",
+            "type": "string"
+          }
+        ],
+        "optional": []
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Upload realizado",
+          "bodyType": "uploadResult"
+        }
+      ],
+      "notes": "Mantido para compatibilidade, utiliza mesma lógica de /document"
+    },
+    {
+      "method": "POST",
+      "path": "/api/upload/image",
+      "group": "Upload",
+      "summary": "Upload de imagem",
+      "authentication": true,
+      "permissions": [
+        "UPLOAD_CREATE"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "tipo",
+            "type": "string"
+          },
+          {
+            "name": "entidadeId",
+            "type": "integer"
+          },
+          {
+            "name": "entidadeTipo",
+            "type": "string",
+            "enum": [
+              "CONTAINER",
+              "AVERBACAO",
+              "CLIENTE",
+              "SEGURADORA"
+            ]
+          }
+        ],
+        "optional": []
+      },
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/upload/bulk",
+      "group": "Upload",
+      "summary": "Upload em lote",
+      "authentication": true,
+      "permissions": [
+        "UPLOAD_CREATE"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "tipo",
+            "type": "string"
+          },
+          {
+            "name": "entidadeId",
+            "type": "integer"
+          },
+          {
+            "name": "entidadeTipo",
+            "type": "string",
+            "enum": [
+              "CONTAINER",
+              "AVERBACAO",
+              "CLIENTE",
+              "SEGURADORA"
+            ]
+          }
+        ],
+        "optional": []
+      },
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/upload/{id}/download",
+      "group": "Upload",
+      "summary": "Download de arquivo",
+      "authentication": true,
+      "permissions": [
+        "UPLOAD_READ"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/upload/{id}/preview",
+      "group": "Upload",
+      "summary": "Preview de arquivo",
+      "authentication": true,
+      "permissions": [
+        "UPLOAD_READ"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/upload/{id}",
+      "group": "Upload",
+      "summary": "Remove arquivo",
+      "authentication": true,
+      "permissions": [
+        "UPLOAD_DELETE"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/upload/entity/{entidadeTipo}/{entidadeId}",
+      "group": "Upload",
+      "summary": "Lista arquivos por entidade",
+      "authentication": true,
+      "permissions": [
+        "UPLOAD_READ"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/upload/validate",
+      "group": "Upload",
+      "summary": "Validação pré-upload",
+      "authentication": true,
+      "permissions": [
+        "UPLOAD_CREATE"
+      ],
+      "payload": {
+        "contentType": "application/json",
+        "required": [
+          {
+            "name": "fileName",
+            "type": "string"
+          },
+          {
+            "name": "fileSize",
+            "type": "number"
+          },
+          {
+            "name": "fileType",
+            "type": "string"
+          }
+        ],
+        "optional": []
+      },
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/upload/statistics",
+      "group": "Upload",
+      "summary": "Estatísticas de upload",
+      "authentication": true,
+      "permissions": [
+        "UPLOAD_READ"
+      ],
+      "responses": [
+        {
+          "status": 501,
+          "description": "Não implementado",
+          "bodyType": "notImplemented"
+        }
+      ]
+    }
+  ]
+}

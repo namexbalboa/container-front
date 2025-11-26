@@ -1,0 +1,754 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "API de Averbação de Containers",
+      "version": "1.0.0",
+      "description": "API para gerenciamento de containers e averbações"
+    },
+    "servers": [
+      {
+        "url": "http://localhost:3001/api",
+        "description": "Servidor de Desenvolvimento"
+      }
+    ],
+    "components": {
+      "securitySchemes": {
+        "bearerAuth": {
+          "type": "http",
+          "scheme": "bearer",
+          "bearerFormat": "JWT"
+        }
+      },
+      "schemas": {
+        "User": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "integer" },
+            "name": { "type": "string" },
+            "email": { "type": "string", "format": "email" },
+            "phone": { "type": "string" },
+            "cargo": { "type": "string" },
+            "role": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "integer" },
+                "nome": { "type": "string", "enum": ["Admin", "Analista"] }
+              }
+            },
+            "settings": {
+              "type": "object",
+              "properties": {
+                "timezone": { "type": "string" },
+                "language": { "type": "string" },
+                "notifications": { "type": "boolean" }
+              }
+            },
+            "createdAt": { "type": "string", "format": "date-time" },
+            "updatedAt": { "type": "string", "format": "date-time" }
+          }
+        },
+        "Container": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "integer" },
+            "numero": { "type": "string" },
+            "tipo": { "type": "string" },
+            "status": { "type": "string" },
+            "data": { "type": "string", "format": "date-time" },
+            "origem": { "type": "string" },
+            "destino": { "type": "string" },
+            "valor": { "type": "string" },
+            "createdAt": { "type": "string", "format": "date-time" },
+            "updatedAt": { "type": "string", "format": "date-time" }
+          }
+        },
+        "Averbacao": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "integer" },
+            "containerId": { "type": "integer" },
+            "container": { "$ref": "#/components/schemas/Container" },
+            "tipoContainer": { "type": "string" },
+            "valorMercadoria": { "type": "string" },
+            "moeda": { "type": "string" },
+            "tipoMercadoria": { "type": "string" },
+            "pesoBruto": { "type": "string" },
+            "dataEmbarque": { "type": "string", "format": "date-time" },
+            "portoOrigem": { "type": "string" },
+            "portoDestino": { "type": "string" },
+            "seguradora": { "type": "string" },
+            "numeroApolice": { "type": "string" },
+            "valorSegurado": { "type": "string" },
+            "status": { "type": "string" },
+            "documentos": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "integer" },
+                  "url": { "type": "string" },
+                  "nome": { "type": "string" }
+                }
+              }
+            },
+            "createdAt": { "type": "string", "format": "date-time" },
+            "updatedAt": { "type": "string", "format": "date-time" }
+          }
+        }
+      }
+    },
+    "paths": {
+      "/auth/login": {
+        "post": {
+          "tags": ["Autenticação"],
+          "summary": "Login de usuário",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["email", "password"],
+                  "properties": {
+                    "email": { "type": "string", "format": "email" },
+                    "password": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Login bem sucedido",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "token": { "type": "string" },
+                      "user": { "$ref": "#/components/schemas/User" }
+                    }
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Credenciais inválidas"
+            }
+          }
+        }
+      },
+      "/users": {
+        "get": {
+          "tags": ["Usuários"],
+          "summary": "Listar usuários (Admin)",
+          "security": [{ "bearerAuth": [] }],
+          "responses": {
+            "200": {
+              "description": "Lista de usuários",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": { "$ref": "#/components/schemas/User" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "post": {
+          "tags": ["Usuários"],
+          "summary": "Criar usuário (Admin)",
+          "security": [{ "bearerAuth": [] }],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["name", "email", "password", "roleId"],
+                  "properties": {
+                    "name": { "type": "string" },
+                    "email": { "type": "string", "format": "email" },
+                    "password": { "type": "string" },
+                    "phone": { "type": "string" },
+                    "cargo": { "type": "string" },
+                    "roleId": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Usuário criado",
+              "content": {
+                "application/json": {
+                  "schema": { "$ref": "#/components/schemas/User" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/users/profile": {
+        "get": {
+          "tags": ["Usuários"],
+          "summary": "Obter perfil do usuário",
+          "security": [{ "bearerAuth": [] }],
+          "responses": {
+            "200": {
+              "description": "Perfil do usuário",
+              "content": {
+                "application/json": {
+                  "schema": { "$ref": "#/components/schemas/User" }
+                }
+              }
+            }
+          }
+        },
+        "put": {
+          "tags": ["Usuários"],
+          "summary": "Atualizar perfil do usuário",
+          "security": [{ "bearerAuth": [] }],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": { "type": "string" },
+                    "email": { "type": "string", "format": "email" },
+                    "phone": { "type": "string" },
+                    "cargo": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Perfil atualizado",
+              "content": {
+                "application/json": {
+                  "schema": { "$ref": "#/components/schemas/User" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/users/settings": {
+        "get": {
+          "tags": ["Usuários"],
+          "summary": "Obter configurações do usuário",
+          "security": [{ "bearerAuth": [] }],
+          "responses": {
+            "200": {
+              "description": "Configurações do usuário",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "timezone": { "type": "string" },
+                      "language": { "type": "string" },
+                      "notifications": { "type": "boolean" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "put": {
+          "tags": ["Usuários"],
+          "summary": "Atualizar configurações do usuário",
+          "security": [{ "bearerAuth": [] }],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "timezone": { "type": "string" },
+                    "language": { "type": "string" },
+                    "notifications": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Configurações atualizadas",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "timezone": { "type": "string" },
+                      "language": { "type": "string" },
+                      "notifications": { "type": "boolean" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/containers": {
+        "get": {
+          "tags": ["Containers"],
+          "summary": "Listar containers",
+          "security": [{ "bearerAuth": [] }],
+          "parameters": [
+            {
+              "in": "query",
+              "name": "numeroContainer",
+              "schema": { "type": "string" }
+            },
+            {
+              "in": "query",
+              "name": "tipoContainer",
+              "schema": { "type": "string" }
+            },
+            {
+              "in": "query",
+              "name": "status",
+              "schema": { "type": "string" }
+            },
+            {
+              "in": "query",
+              "name": "dataInicio",
+              "schema": { "type": "string", "format": "date" }
+            },
+            {
+              "in": "query",
+              "name": "dataFim",
+              "schema": { "type": "string", "format": "date" }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Lista de containers",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "containers": {
+                        "type": "array",
+                        "items": { "$ref": "#/components/schemas/Container" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "post": {
+          "tags": ["Containers"],
+          "summary": "Criar container",
+          "security": [{ "bearerAuth": [] }],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["numero", "tipo", "status", "data", "origem", "destino", "valor"],
+                  "properties": {
+                    "numero": { "type": "string" },
+                    "tipo": { "type": "string" },
+                    "status": { "type": "string" },
+                    "data": { "type": "string", "format": "date-time" },
+                    "origem": { "type": "string" },
+                    "destino": { "type": "string" },
+                    "valor": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Container criado",
+              "content": {
+                "application/json": {
+                  "schema": { "$ref": "#/components/schemas/Container" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/containers/{id}": {
+        "get": {
+          "tags": ["Containers"],
+          "summary": "Obter container por ID",
+          "security": [{ "bearerAuth": [] }],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "id",
+              "required": true,
+              "schema": { "type": "integer" }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Container encontrado",
+              "content": {
+                "application/json": {
+                  "schema": { "$ref": "#/components/schemas/Container" }
+                }
+              }
+            }
+          }
+        },
+        "put": {
+          "tags": ["Containers"],
+          "summary": "Atualizar container",
+          "security": [{ "bearerAuth": [] }],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "id",
+              "required": true,
+              "schema": { "type": "integer" }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "numero": { "type": "string" },
+                    "tipo": { "type": "string" },
+                    "status": { "type": "string" },
+                    "data": { "type": "string", "format": "date-time" },
+                    "origem": { "type": "string" },
+                    "destino": { "type": "string" },
+                    "valor": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Container atualizado",
+              "content": {
+                "application/json": {
+                  "schema": { "$ref": "#/components/schemas/Container" }
+                }
+              }
+            }
+          }
+        },
+        "delete": {
+          "tags": ["Containers"],
+          "summary": "Excluir container (Admin)",
+          "security": [{ "bearerAuth": [] }],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "id",
+              "required": true,
+              "schema": { "type": "integer" }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Container excluído",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/averbacoes": {
+        "get": {
+          "tags": ["Averbações"],
+          "summary": "Listar averbações",
+          "security": [{ "bearerAuth": [] }],
+          "responses": {
+            "200": {
+              "description": "Lista de averbações",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "averbacoes": {
+                        "type": "array",
+                        "items": { "$ref": "#/components/schemas/Averbacao" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "post": {
+          "tags": ["Averbações"],
+          "summary": "Criar averbação",
+          "security": [{ "bearerAuth": [] }],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "containerId",
+                    "tipoContainer",
+                    "valorMercadoria",
+                    "moeda",
+                    "tipoMercadoria",
+                    "pesoBruto",
+                    "dataEmbarque",
+                    "portoOrigem",
+                    "portoDestino",
+                    "seguradora",
+                    "numeroApolice",
+                    "valorSegurado"
+                  ],
+                  "properties": {
+                    "containerId": { "type": "integer" },
+                    "tipoContainer": { "type": "string" },
+                    "valorMercadoria": { "type": "string" },
+                    "moeda": { "type": "string" },
+                    "tipoMercadoria": { "type": "string" },
+                    "pesoBruto": { "type": "string" },
+                    "dataEmbarque": { "type": "string", "format": "date-time" },
+                    "portoOrigem": { "type": "string" },
+                    "portoDestino": { "type": "string" },
+                    "seguradora": { "type": "string" },
+                    "numeroApolice": { "type": "string" },
+                    "valorSegurado": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Averbação criada",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "integer" },
+                      "message": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/averbacoes/{id}": {
+        "get": {
+          "tags": ["Averbações"],
+          "summary": "Obter averbação por ID",
+          "security": [{ "bearerAuth": [] }],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "id",
+              "required": true,
+              "schema": { "type": "integer" }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Averbação encontrada",
+              "content": {
+                "application/json": {
+                  "schema": { "$ref": "#/components/schemas/Averbacao" }
+                }
+              }
+            }
+          }
+        },
+        "put": {
+          "tags": ["Averbações"],
+          "summary": "Atualizar averbação",
+          "security": [{ "bearerAuth": [] }],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "id",
+              "required": true,
+              "schema": { "type": "integer" }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tipoContainer": { "type": "string" },
+                    "valorMercadoria": { "type": "string" },
+                    "moeda": { "type": "string" },
+                    "tipoMercadoria": { "type": "string" },
+                    "pesoBruto": { "type": "string" },
+                    "dataEmbarque": { "type": "string", "format": "date-time" },
+                    "portoOrigem": { "type": "string" },
+                    "portoDestino": { "type": "string" },
+                    "seguradora": { "type": "string" },
+                    "numeroApolice": { "type": "string" },
+                    "valorSegurado": { "type": "string" },
+                    "status": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Averbação atualizada",
+              "content": {
+                "application/json": {
+                  "schema": { "$ref": "#/components/schemas/Averbacao" }
+                }
+              }
+            }
+          }
+        },
+        "delete": {
+          "tags": ["Averbações"],
+          "summary": "Excluir averbação (Admin)",
+          "security": [{ "bearerAuth": [] }],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "id",
+              "required": true,
+              "schema": { "type": "integer" }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Averbação excluída",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/averbacoes/{id}/documentos": {
+        "post": {
+          "tags": ["Averbações"],
+          "summary": "Adicionar documento à averbação",
+          "security": [{ "bearerAuth": [] }],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "id",
+              "required": true,
+              "schema": { "type": "integer" }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["url", "nome"],
+                  "properties": {
+                    "url": { "type": "string" },
+                    "nome": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Documento adicionado",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "integer" },
+                      "url": { "type": "string" },
+                      "nome": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/averbacoes/{id}/documentos/{documentoId}": {
+        "delete": {
+          "tags": ["Averbações"],
+          "summary": "Remover documento da averbação",
+          "security": [{ "bearerAuth": [] }],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "id",
+              "required": true,
+              "schema": { "type": "integer" }
+            },
+            {
+              "in": "path",
+              "name": "documentoId",
+              "required": true,
+              "schema": { "type": "integer" }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Documento removido",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  } 

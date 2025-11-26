@@ -1,0 +1,619 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { ContainerTrip, Modal, TripsByClientFilters } from "@/types/api";
+import { apiService } from "@/lib/api";
+
+interface Step2SelectTripsProps {
+    clienteId: number | null;
+    periodoInicio: string;
+    periodoFim: string;
+    selectedTrips: ContainerTrip[];
+    onUpdate: (data: { selectedTrips: ContainerTrip[] }) => void;
+    onNext: () => void;
+    onBack: () => void;
+}
+
+export default function Step2SelectTrips({
+    clienteId,
+    periodoInicio,
+    periodoFim,
+    selectedTrips,
+    onUpdate,
+    onNext,
+    onBack
+}: Step2SelectTripsProps) {
+    const [trips, setTrips] = useState<ContainerTrip[]>([]);
+    const [selectedTripIds, setSelectedTripIds] = useState<Set<number>>(new Set());
+    const [isLoading, setIsLoading] = useState(true);
+    const [loadingProgress, setLoadingProgress] = useState<string>("");
+    const [error, setError] = useState<string | null>(null);
+
+    // Filtros
+    const [filters, setFilters] = useState({
+        status: "",
+        modal: "" as Modal | "",
+        numeroCE: "",
+        portoOrigemId: undefined as number | undefined,
+        portoDestinoId: undefined as number | undefined
+    });
+
+    // Constants for validation
+    const MAX_SELECTIONS = 100;
+    const MAX_DATE_RANGE_DAYS = 730; // 2 years
+
+    // Validation functions
+    const validateDateRange = () => {
+        if (!periodoInicio || !periodoFim) return null;
+
+        const start = new Date(periodoInicio);
+        const end = new Date(periodoFim);
+        const diffTime = Math.abs(end.getTime() - start.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays > MAX_DATE_RANGE_DAYS) {
+            return `O período selecionado é muito longo (${diffDays} dias). Máximo permitido: ${MAX_DATE_RANGE_DAYS} dias (2 anos).`;
+        }
+
+        return null;
+    };
+
+    const validateSelectionLimit = (count: number) => {
+        if (count > MAX_SELECTIONS) {
+            return `Você selecionou ${count} viagens. Máximo permitido: ${MAX_SELECTIONS} viagens.`;
+        }
+        return null;
+    };
+
+    // Inicializar selectedTripIds a partir de selectedTrips
+    useEffect(() => {
+        if (selectedTrips.length > 0) {
+            setSelectedTripIds(new Set(selectedTrips.map(t => t.idContainerTrip)));
+        }
+    }, []);
+
+    // Buscar viagens quando os filtros mudarem
+    useEffect(() => {
+        if (clienteId && periodoInicio && periodoFim) {
+            fetchTrips();
+        }
+    }, [clienteId, periodoInicio, periodoFim, filters]);
+
+    const fetchTrips = async () => {
+        if (!clienteId) {
+            setError("ID do cliente não informado");
+            return;
+        }
+
+        try {
+            setIsLoading(true);
+            setError(null);
+            setLoadingProgress("Carregando viagens...");
+
+            const limit = 100; // Máximo permitido pelo backend
+            let allTrips: ContainerTrip[] = [];
+            let currentPage = 1;
+            let hasMorePages = true;
+
+            // Buscar todas as páginas
+            while (hasMorePages) {
+                const requestFilters: TripsByClientFilters = {
+                    clientId: clienteId,
+                    startDate: periodoInicio,
+                    endDate: periodoFim,
+                    page: currentPage,
+                    limit: limit,
+                    ...(filters.status && { status: filters.status }),
+                    ...(filters.modal && { modal: filters.modal }),
+                    ...(filters.numeroCE && { numeroCE: filters.numeroCE }),
+                    ...(filters.portoOrigemId && { portoOrigemId: filters.portoOrigemId }),
+                    ...(filters.portoDestinoId && { portoDestinoId: filters.portoDestinoId })
+                };
+
+                const response = await apiService.getTripsByClient(requestFilters);
+
+                if (response.success && response.data) {
+                    allTrips = [...allTrips, ...response.data.items];
+                    hasMorePages = response.data.pagination.hasNextPage;
+
+                    // Atualizar progresso
+                    setLoadingProgress(`Carregando viagens... ${allTrips.length} encontradas`);
+
+                    currentPage++;
+                    console.log(`[Step2] Página ${currentPage - 1}: ${response.data.items.length} viagens`);
+                } else {
+                    break;
+                }
+            }
+
+            setTrips(allTrips);
+
+            // Se é a primeira carga e não há seleção prévia, selecionar todos
+            if (selectedTripIds.size === 0) {
+                const allIds = new Set(allTrips.map(t => t.idContainerTrip));
+                setSelectedTripIds(allIds);
+            }
+
+            console.log(`[Step2] Total carregado: ${allTrips.length} viagens`);
+        } catch (err) {
+            console.error("Erro ao carregar viagens:", err);
+            setError("Erro ao carregar viagens. Tente novamente.");
+        } finally {
+            setIsLoading(false);
+            setLoadingProgress("");
+        }
+    };
+
+    // Verificar se todas as viagens estão selecionadas
+    const isAllSelected = trips.length > 0 &&
+        trips.every(trip => selectedTripIds.has(trip.idContainerTrip));
+
+    // Toggle master checkbox
+    const handleMasterCheckboxChange = () => {
+        if (isAllSelected) {
+            // Desmarcar todas
+            setSelectedTripIds(new Set());
+            setError(null); // Clear error when deselecting
+        } else {
+            // Marcar todas
+            const newSelected = new Set(trips.map(t => t.idContainerTrip));
+
+            // Validate selection limit
+            const validationError = validateSelectionLimit(newSelected.size);
+            if (validationError) {
+                setError(validationError);
+                return; // Don't apply selection if exceeds limit
+            }
+
+            setSelectedTripIds(newSelected);
+            setError(null);
+        }
+    };
+
+    // Toggle individual checkbox
+    const handleTripCheckboxChange = (tripId: number) => {
+        const newSelected = new Set(selectedTripIds);
+        if (newSelected.has(tripId)) {
+            newSelected.delete(tripId);
+            setError(null); // Clear error when deselecting
+        } else {
+            newSelected.add(tripId);
+
+            // Validate selection limit
+            const validationError = validateSelectionLimit(newSelected.size);
+            if (validationError) {
+                setError(validationError);
+                return; // Don't apply selection if exceeds limit
+            }
+            setError(null);
+        }
+        setSelectedTripIds(newSelected);
+    };
+
+    // Aplicar filtros
+    const handleApplyFilters = () => {
+        // fetchTrips será chamado automaticamente pelo useEffect
+    };
+
+    // Limpar filtros
+    const handleClearFilters = () => {
+        setFilters({
+            status: "",
+            modal: "",
+            numeroCE: "",
+            portoOrigemId: undefined,
+            portoDestinoId: undefined
+        });
+    };
+
+    // Avançar para o próximo passo
+    const handleNext = async () => {
+        // Validation 1: At least one trip must be selected
+        if (selectedTripIds.size === 0) {
+            setError("Selecione pelo menos uma viagem para continuar");
+            return;
+        }
+
+        // Validation 2: Check selection limit
+        const selectionLimitError = validateSelectionLimit(selectedTripIds.size);
+        if (selectionLimitError) {
+            setError(selectionLimitError);
+            return;
+        }
+
+        // Validation 3: Warn if too many selections
+        if (selectedTripIds.size > 50) {
+            console.warn(`[WIZARD] Selecionadas ${selectedTripIds.size} viagens. Pode impactar performance.`);
+        }
+
+        try {
+            setIsLoading(true);
+            setError(null);
+
+            // Buscar todas as viagens selecionadas
+            const response = await apiService.getTripsByIds(Array.from(selectedTripIds));
+
+            if (response.success && response.data) {
+                // Validation 4: Check if all selected trips were found
+                if (response.data.length < selectedTripIds.size) {
+                    console.warn(`[WIZARD] Algumas viagens não foram encontradas. Selecionadas: ${selectedTripIds.size}, Encontradas: ${response.data.length}`);
+                }
+
+                // Validation 5: Check if trips have containers
+                const tripsWithoutContainers = response.data.filter(
+                    trip => !trip.containers || trip.containers.length === 0
+                );
+                if (tripsWithoutContainers.length > 0) {
+                    console.warn(`[WIZARD] ${tripsWithoutContainers.length} viagens sem containers associados`);
+                }
+
+                onUpdate({ selectedTrips: response.data });
+                onNext();
+            }
+
+            // Scroll para o topo ao avançar
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } catch (err: any) {
+            console.error("Erro ao carregar viagens selecionadas:", err);
+            const errorMessage = err?.response?.data?.message || "Erro ao carregar viagens. Tente novamente.";
+            setError(errorMessage);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const formatDate = (dateString: string | Date) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString("pt-BR");
+    };
+
+    // Loading skeleton component
+    const LoadingSkeleton = () => (
+        <div className="space-y-6">
+            <div>
+                <div className="h-7 w-48 bg-gray-200 rounded animate-pulse mb-2"></div>
+                <div className="h-5 w-96 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+
+            {loadingProgress && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-blue-900 text-center">
+                        {loadingProgress}
+                    </p>
+                </div>
+            )}
+
+            <div className="bg-white rounded-lg shadow p-4 space-y-4">
+                <div className="h-5 w-24 bg-gray-200 rounded animate-pulse"></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="h-20 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="h-20 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="h-20 bg-gray-200 rounded animate-pulse"></div>
+                </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th className="px-6 py-3 w-12"></th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Número CE</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Modal</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data Embarque</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden md:table-cell">Origem</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden md:table-cell">Destino</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Containers</th>
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {[...Array(5)].map((_, index) => (
+                            <tr key={index}>
+                                <td className="px-6 py-4">
+                                    <div className="h-4 w-4 bg-gray-200 rounded animate-pulse"></div>
+                                </td>
+                                <td className="px-6 py-4">
+                                    <div className="h-4 w-12 bg-gray-200 rounded animate-pulse"></div>
+                                </td>
+                                <td className="px-6 py-4">
+                                    <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+                                </td>
+                                <td className="px-6 py-4">
+                                    <div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div>
+                                </td>
+                                <td className="px-6 py-4">
+                                    <div className="h-6 w-24 bg-gray-200 rounded-full animate-pulse"></div>
+                                </td>
+                                <td className="px-6 py-4">
+                                    <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+                                </td>
+                                <td className="px-6 py-4 hidden md:table-cell">
+                                    <div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
+                                </td>
+                                <td className="px-6 py-4 hidden md:table-cell">
+                                    <div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
+                                </td>
+                                <td className="px-6 py-4">
+                                    <div className="h-4 w-8 bg-gray-200 rounded animate-pulse"></div>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+
+    if (isLoading && trips.length === 0) {
+        return <LoadingSkeleton />;
+    }
+
+    return (
+        <div className="space-y-6">
+            {/* Header */}
+            <div>
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                    Seleção de Viagens
+                </h2>
+                <p className="text-gray-600">
+                    Selecione as viagens que deseja incluir nesta averbação
+                </p>
+            </div>
+
+            {error && (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-red-600">{error}</p>
+                </div>
+            )}
+
+            {/* Date range warning */}
+            {(() => {
+                const dateRangeError = validateDateRange();
+                if (dateRangeError) {
+                    return (
+                        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <div className="flex items-start">
+                                <svg className="h-5 w-5 text-yellow-600 mt-0.5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                <p className="text-yellow-800 text-sm">{dateRangeError}</p>
+                            </div>
+                        </div>
+                    );
+                }
+            })()}
+
+            {/* Filtros */}
+            <div className="bg-white rounded-lg shadow p-4 space-y-4">
+                <h3 className="font-medium text-gray-900">Filtros</h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Status
+                        </label>
+                        <select
+                            value={filters.status}
+                            onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        >
+                            <option value="">Todos</option>
+                            <option value="PLANEJADA">Planejada</option>
+                            <option value="EM_ANDAMENTO">Em Andamento</option>
+                            <option value="CONCLUIDA">Concluída</option>
+                            <option value="CANCELADA">Cancelada</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Modal
+                        </label>
+                        <select
+                            value={filters.modal}
+                            onChange={(e) => setFilters({ ...filters, modal: e.target.value as Modal | "" })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        >
+                            <option value="">Todos</option>
+                            <option value="MARITIMO">Marítimo</option>
+                            <option value="RODOVIARIO">Rodoviário</option>
+                            <option value="FERROVIARIO">Ferroviário</option>
+                            <option value="AEREO">Aéreo</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Número CE
+                        </label>
+                        <input
+                            type="text"
+                            value={filters.numeroCE}
+                            onChange={(e) => setFilters({ ...filters, numeroCE: e.target.value })}
+                            placeholder="Buscar por CE..."
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                    </div>
+                </div>
+
+                <div className="flex space-x-2">
+                    <button
+                        onClick={handleApplyFilters}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                        Aplicar Filtros
+                    </button>
+                    <button
+                        onClick={handleClearFilters}
+                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                    >
+                        Limpar Filtros
+                    </button>
+                </div>
+            </div>
+
+            {/* Contador de selecionados */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                    <p className="text-blue-900">
+                        <span className="font-semibold">{selectedTripIds.size}</span> de{" "}
+                        <span className="font-semibold">{trips.length}</span> viagem(ns) selecionada(s)
+                    </p>
+                    {trips.length > 0 && (
+                        <p className="text-sm text-blue-700">
+                            Total de containers: <span className="font-semibold">
+                                {trips.reduce((sum, trip) => sum + (trip.containers?.length || 0), 0)}
+                            </span>
+                        </p>
+                    )}
+                </div>
+            </div>
+
+            {/* Tabela de Viagens */}
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+                {trips.length === 0 ? (
+                    <div className="p-12 text-center">
+                        <svg
+                            className="mx-auto h-16 w-16 text-gray-400 mb-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            aria-hidden="true"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={1.5}
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                            />
+                        </svg>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">
+                            Nenhuma viagem encontrada
+                        </h3>
+                        <p className="text-gray-500 mb-4">
+                            Não há viagens cadastradas para este cliente no período selecionado.
+                        </p>
+                        <p className="text-sm text-gray-400">
+                            Tente ajustar os filtros ou o período de busca.
+                        </p>
+                    </div>
+                ) : (
+                    <>
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left">
+                                            <input
+                                                type="checkbox"
+                                                checked={isAllSelected}
+                                                onChange={handleMasterCheckboxChange}
+                                                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                            />
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            ID
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Número CE
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Modal
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Status
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Data Embarque
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
+                                            Origem
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
+                                            Destino
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
+                                            Containers
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {trips.map((trip) => (
+                                        <tr
+                                            key={trip.idContainerTrip}
+                                            className={`hover:bg-gray-50 cursor-pointer transition-colors duration-150 ${
+                                                selectedTripIds.has(trip.idContainerTrip) ? "bg-blue-50" : ""
+                                            }`}
+                                            onClick={() => handleTripCheckboxChange(trip.idContainerTrip)}
+                                        >
+                                            <td className="px-6 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedTripIds.has(trip.idContainerTrip)}
+                                                    onChange={() => handleTripCheckboxChange(trip.idContainerTrip)}
+                                                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                />
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                #{trip.idContainerTrip}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                {trip.numeroCE || "-"}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                {trip.modal}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                                    trip.statusViagem === "CONCLUIDA"
+                                                        ? "bg-green-100 text-green-800"
+                                                        : trip.statusViagem === "EM_ANDAMENTO"
+                                                        ? "bg-blue-100 text-blue-800"
+                                                        : trip.statusViagem === "PLANEJADA"
+                                                        ? "bg-yellow-100 text-yellow-800"
+                                                        : "bg-red-100 text-red-800"
+                                                }`}>
+                                                    {trip.statusViagem}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                {formatDate(trip.dataEmbarque)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 hidden md:table-cell">
+                                                {trip.portoOrigem?.nomePorto || "-"}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 hidden md:table-cell">
+                                                {trip.portoDestino?.nomePorto || "-"}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 hidden sm:table-cell">
+                                                {trip.containers?.length || 0}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>
+                )}
+            </div>
+
+            {/* Botões de Navegação */}
+            <div className="flex justify-between pt-6 border-t border-gray-200">
+                <button
+                    onClick={onBack}
+                    className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                >
+                    Voltar
+                </button>
+                <button
+                    onClick={handleNext}
+                    disabled={selectedTripIds.size === 0 || isLoading}
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                >
+                    {isLoading ? "Carregando..." : "Próximo"}
+                </button>
+            </div>
+        </div>
+    );
+}

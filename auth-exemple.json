@@ -1,0 +1,421 @@
+{
+  "success": true,
+  "message": "Login realizado com sucesso",
+  "data": {
+    "usuario": {
+      "id": 1,
+      "nome": "Administrador",
+      "email": "admin@container.com",
+      "cpf": "000.000.000-00",
+      "telefone": "(11) 99999-9999",
+      "status": "ativo",
+      "perfil": {
+        "idPerfil": 1,
+        "nomePerfil": "ADMIN",
+        "descricao": "Administrador do sistema com acesso total",
+        "nivelAcesso": null,
+        "ativo": true,
+        "dataCriacao": "2025-09-30T19:23:27.668Z",
+        "perfilPermissoes": [
+          {
+            "idPerfilPermissao": 1,
+            "idPerfil": 1,
+            "idPermissao": 31,
+            "permissao": {
+              "idPermissao": 31,
+              "nomePermissao": "ADMIN",
+              "descricao": "Acesso total ao sistema",
+              "modulo": "SISTEMA",
+              "acao": "ALL"
+            }
+          },
+          {
+            "idPerfilPermissao": 2,
+            "idPerfil": 1,
+            "idPermissao": 1,
+            "permissao": {
+              "idPermissao": 1,
+              "nomePermissao": "USER_CREATE",
+              "descricao": "Permite criar novos usuários",
+              "modulo": "USUARIOS",
+              "acao": "CREATE"
+            }
+          },
+          {
+            "idPerfilPermissao": 3,
+            "idPerfil": 1,
+            "idPermissao": 2,
+            "permissao": {
+              "idPermissao": 2,
+              "nomePermissao": "USER_READ",
+              "descricao": "Permite visualizar dados de usuários",
+              "modulo": "USUARIOS",
+              "acao": "READ"
+            }
+          },
+          {
+            "idPerfilPermissao": 4,
+            "idPerfil": 1,
+            "idPermissao": 3,
+            "permissao": {
+              "idPermissao": 3,
+              "nomePermissao": "USER_UPDATE",
+              "descricao": "Permite atualizar dados de usuários",
+              "modulo": "USUARIOS",
+              "acao": "UPDATE"
+            }
+          },
+          {
+            "idPerfilPermissao": 5,
+            "idPerfil": 1,
+            "idPermissao": 4,
+            "permissao": {
+              "idPermissao": 4,
+              "nomePermissao": "USER_DELETE",
+              "descricao": "Permite excluir usuários",
+              "modulo": "USUARIOS",
+              "acao": "DELETE"
+            }
+          },
+          {
+            "idPerfilPermissao": 6,
+            "idPerfil": 1,
+            "idPermissao": 5,
+            "permissao": {
+              "idPermissao": 5,
+              "nomePermissao": "USER_MANAGE_PERMISSIONS",
+              "descricao": "Permite gerenciar permissões de usuários",
+              "modulo": "USUARIOS",
+              "acao": "MANAGE"
+            }
+          },
+          {
+            "idPerfilPermissao": 7,
+            "idPerfil": 1,
+            "idPermissao": 6,
+            "permissao": {
+              "idPermissao": 6,
+              "nomePermissao": "CLIENT_CREATE",
+              "descricao": "Permite criar novos clientes",
+              "modulo": "CLIENTES",
+              "acao": "CREATE"
+            }
+          },
+          {
+            "idPerfilPermissao": 8,
+            "idPerfil": 1,
+            "idPermissao": 7,
+            "permissao": {
+              "idPermissao": 7,
+              "nomePermissao": "CLIENT_READ",
+              "descricao": "Permite visualizar dados de clientes",
+              "modulo": "CLIENTES",
+              "acao": "READ"
+            }
+          },
+          {
+            "idPerfilPermissao": 9,
+            "idPerfil": 1,
+            "idPermissao": 8,
+            "permissao": {
+              "idPermissao": 8,
+              "nomePermissao": "CLIENT_UPDATE",
+              "descricao": "Permite atualizar dados de clientes",
+              "modulo": "CLIENTES",
+              "acao": "UPDATE"
+            }
+          },
+          {
+            "idPerfilPermissao": 10,
+            "idPerfil": 1,
+            "idPermissao": 9,
+            "permissao": {
+              "idPermissao": 9,
+              "nomePermissao": "CLIENT_DELETE",
+              "descricao": "Permite excluir clientes",
+              "modulo": "CLIENTES",
+              "acao": "DELETE"
+            }
+          },
+          {
+            "idPerfilPermissao": 11,
+            "idPerfil": 1,
+            "idPermissao": 10,
+            "permissao": {
+              "idPermissao": 10,
+              "nomePermissao": "CONTAINER_CREATE",
+              "descricao": "Permite criar novos containers",
+              "modulo": "CONTAINERS",
+              "acao": "CREATE"
+            }
+          },
+          {
+            "idPerfilPermissao": 12,
+            "idPerfil": 1,
+            "idPermissao": 11,
+            "permissao": {
+              "idPermissao": 11,
+              "nomePermissao": "CONTAINER_READ",
+              "descricao": "Permite visualizar dados de containers",
+              "modulo": "CONTAINERS",
+              "acao": "READ"
+            }
+          },
+          {
+            "idPerfilPermissao": 13,
+            "idPerfil": 1,
+            "idPermissao": 12,
+            "permissao": {
+              "idPermissao": 12,
+              "nomePermissao": "CONTAINER_UPDATE",
+              "descricao": "Permite atualizar dados de containers",
+              "modulo": "CONTAINERS",
+              "acao": "UPDATE"
+            }
+          },
+          {
+            "idPerfilPermissao": 14,
+            "idPerfil": 1,
+            "idPermissao": 13,
+            "permissao": {
+              "idPermissao": 13,
+              "nomePermissao": "CONTAINER_DELETE",
+              "descricao": "Permite excluir containers",
+              "modulo": "CONTAINERS",
+              "acao": "DELETE"
+            }
+          },
+          {
+            "idPerfilPermissao": 15,
+            "idPerfil": 1,
+            "idPermissao": 14,
+            "permissao": {
+              "idPermissao": 14,
+              "nomePermissao": "CONTAINER_TRACK",
+              "descricao": "Permite rastrear containers",
+              "modulo": "CONTAINERS",
+              "acao": "TRACK"
+            }
+          },
+          {
+            "idPerfilPermissao": 16,
+            "idPerfil": 1,
+            "idPermissao": 15,
+            "permissao": {
+              "idPermissao": 15,
+              "nomePermissao": "AVERBACAO_CREATE",
+              "descricao": "Permite criar novas averbações",
+              "modulo": "AVERBACOES",
+              "acao": "CREATE"
+            }
+          },
+          {
+            "idPerfilPermissao": 17,
+            "idPerfil": 1,
+            "idPermissao": 16,
+            "permissao": {
+              "idPermissao": 16,
+              "nomePermissao": "AVERBACAO_READ",
+              "descricao": "Permite visualizar dados de averbações",
+              "modulo": "AVERBACOES",
+              "acao": "READ"
+            }
+          },
+          {
+            "idPerfilPermissao": 18,
+            "idPerfil": 1,
+            "idPermissao": 17,
+            "permissao": {
+              "idPermissao": 17,
+              "nomePermissao": "AVERBACAO_UPDATE",
+              "descricao": "Permite atualizar dados de averbações",
+              "modulo": "AVERBACOES",
+              "acao": "UPDATE"
+            }
+          },
+          {
+            "idPerfilPermissao": 19,
+            "idPerfil": 1,
+            "idPermissao": 18,
+            "permissao": {
+              "idPermissao": 18,
+              "nomePermissao": "AVERBACAO_DELETE",
+              "descricao": "Permite excluir averbações",
+              "modulo": "AVERBACOES",
+              "acao": "DELETE"
+            }
+          },
+          {
+            "idPerfilPermissao": 20,
+            "idPerfil": 1,
+            "idPermissao": 19,
+            "permissao": {
+              "idPermissao": 19,
+              "nomePermissao": "AVERBACAO_APPROVE",
+              "descricao": "Permite aprovar averbações",
+              "modulo": "AVERBACOES",
+              "acao": "APPROVE"
+            }
+          },
+          {
+            "idPerfilPermissao": 21,
+            "idPerfil": 1,
+            "idPermissao": 20,
+            "permissao": {
+              "idPermissao": 20,
+              "nomePermissao": "SEGURADORA_CREATE",
+              "descricao": "Permite criar novas seguradoras",
+              "modulo": "SEGURADORAS",
+              "acao": "CREATE"
+            }
+          },
+          {
+            "idPerfilPermissao": 22,
+            "idPerfil": 1,
+            "idPermissao": 21,
+            "permissao": {
+              "idPermissao": 21,
+              "nomePermissao": "SEGURADORA_READ",
+              "descricao": "Permite visualizar dados de seguradoras",
+              "modulo": "SEGURADORAS",
+              "acao": "READ"
+            }
+          },
+          {
+            "idPerfilPermissao": 23,
+            "idPerfil": 1,
+            "idPermissao": 22,
+            "permissao": {
+              "idPermissao": 22,
+              "nomePermissao": "SEGURADORA_UPDATE",
+              "descricao": "Permite atualizar dados de seguradoras",
+              "modulo": "SEGURADORAS",
+              "acao": "UPDATE"
+            }
+          },
+          {
+            "idPerfilPermissao": 24,
+            "idPerfil": 1,
+            "idPermissao": 23,
+            "permissao": {
+              "idPermissao": 23,
+              "nomePermissao": "SEGURADORA_DELETE",
+              "descricao": "Permite excluir seguradoras",
+              "modulo": "SEGURADORAS",
+              "acao": "DELETE"
+            }
+          },
+          {
+            "idPerfilPermissao": 25,
+            "idPerfil": 1,
+            "idPermissao": 24,
+            "permissao": {
+              "idPermissao": 24,
+              "nomePermissao": "UPLOAD_CREATE",
+              "descricao": "Permite fazer upload de arquivos",
+              "modulo": "UPLOADS",
+              "acao": "CREATE"
+            }
+          },
+          {
+            "idPerfilPermissao": 26,
+            "idPerfil": 1,
+            "idPermissao": 25,
+            "permissao": {
+              "idPermissao": 25,
+              "nomePermissao": "UPLOAD_READ",
+              "descricao": "Permite visualizar arquivos",
+              "modulo": "UPLOADS",
+              "acao": "READ"
+            }
+          },
+          {
+            "idPerfilPermissao": 27,
+            "idPerfil": 1,
+            "idPermissao": 26,
+            "permissao": {
+              "idPermissao": 26,
+              "nomePermissao": "UPLOAD_DELETE",
+              "descricao": "Permite excluir arquivos",
+              "modulo": "UPLOADS",
+              "acao": "DELETE"
+            }
+          },
+          {
+            "idPerfilPermissao": 28,
+            "idPerfil": 1,
+            "idPermissao": 27,
+            "permissao": {
+              "idPermissao": 27,
+              "nomePermissao": "DASHBOARD_READ",
+              "descricao": "Permite visualizar dashboard",
+              "modulo": "DASHBOARD",
+              "acao": "READ"
+            }
+          },
+          {
+            "idPerfilPermissao": 29,
+            "idPerfil": 1,
+            "idPermissao": 28,
+            "permissao": {
+              "idPermissao": 28,
+              "nomePermissao": "DASHBOARD_UPDATE",
+              "descricao": "Permite atualizar configurações do dashboard",
+              "modulo": "DASHBOARD",
+              "acao": "UPDATE"
+            }
+          },
+          {
+            "idPerfilPermissao": 30,
+            "idPerfil": 1,
+            "idPermissao": 29,
+            "permissao": {
+              "idPermissao": 29,
+              "nomePermissao": "REPORT_READ",
+              "descricao": "Permite visualizar relatórios",
+              "modulo": "RELATORIOS",
+              "acao": "READ"
+            }
+          },
+          {
+            "idPerfilPermissao": 31,
+            "idPerfil": 1,
+            "idPermissao": 30,
+            "permissao": {
+              "idPermissao": 30,
+              "nomePermissao": "REPORT_EXPORT",
+              "descricao": "Permite exportar relatórios",
+              "modulo": "RELATORIOS",
+              "acao": "EXPORT"
+            }
+          },
+          {
+            "idPerfilPermissao": 32,
+            "idPerfil": 1,
+            "idPermissao": 32,
+            "permissao": {
+              "idPermissao": 32,
+              "nomePermissao": "AUDIT_READ",
+              "descricao": "Permite visualizar logs de auditoria",
+              "modulo": "SISTEMA",
+              "acao": "AUDIT"
+            }
+          },
+          {
+            "idPerfilPermissao": 33,
+            "idPerfil": 1,
+            "idPermissao": 33,
+            "permissao": {
+              "idPermissao": 33,
+              "nomePermissao": "SYSTEM_CONFIG",
+              "descricao": "Permite configurar parâmetros do sistema",
+              "modulo": "SISTEMA",
+              "acao": "CONFIG"
+            }
+          }
+        ]
+      }
+    },
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBjb250YWluZXIuY29tIiwicGVyZmlsSWQiOjEsImlhdCI6MTc1OTM3MDE2MiwiZXhwIjoxNzU5NDU2NTYyfQ.GKO1xxjJvSGkG8TlsK9U_Lwzitn3Sn49LMhv2bUigIg"
+  }
+}
