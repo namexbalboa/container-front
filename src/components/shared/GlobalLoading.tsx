@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Lottie from "lottie-react";
-import containerShipAnimation from "@/../public/Container_Ship.json";
+import containerShipAnimation from "@/../public/container_ship.json";
 
 interface GlobalLoadingProps {
   isLoading: boolean;
