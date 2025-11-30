@@ -198,11 +198,6 @@ export const authOptions: NextAuthOptions = {
         strategy: "jwt",
         maxAge: 24 * 60 * 60,
     },
-    pages: {
-        signIn: "/login",
-        signOut: "/login",
-        error: "/login"
-    },
     events: {
         async signOut() {
             // Redirect to login on signout
