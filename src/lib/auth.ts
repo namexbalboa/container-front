@@ -71,15 +71,21 @@ async function refreshAccessToken(token: any) {
             }),
         });
 
-        const contentType = response.headers && typeof response.headers.get === "function"
-            ? response.headers.get("content-type")
-            : "application/json";
+        // Pega o texto da resposta para lidar com respostas vazias/inválidas
+        const responseText = await response.text();
+        let refreshedTokens: ApiResponse<RefreshTokenResponse>;
 
-        if (!contentType || !contentType.includes("application/json")) {
-            throw new Error(`API returned ${response.status}: ${response.statusText}`);
+        try {
+            refreshedTokens = JSON.parse(responseText);
+        } catch (parseError) {
+            console.error("Erro ao fazer parse da resposta de refresh token:", {
+                error: parseError,
+                status: response.status,
+                responseText: responseText.substring(0, 200),
+                url: buildApiUrl(AUTH_REFRESH_PATH)
+            });
+            throw new Error(`Invalid JSON response from API: ${response.status}`);
         }
-
-        const refreshedTokens: ApiResponse<RefreshTokenResponse> = await response.json();
 
         if (!response.ok || !refreshedTokens.success || !refreshedTokens.data) {
             if (refreshedTokens.message && refreshedTokens.message.includes("Record not found")) {
@@ -141,8 +147,11 @@ export const authOptions: NextAuthOptions = {
                         email: credentials.email,
                         senha: credentials.senha
                     };
-                    
-                    const response = await fetch(buildApiUrl(AUTH_LOGIN_PATH), {
+
+                    const loginUrl = buildApiUrl(AUTH_LOGIN_PATH);
+                    console.log("[NextAuth] Tentando login na URL:", loginUrl);
+
+                    const response = await fetch(loginUrl, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -150,7 +159,21 @@ export const authOptions: NextAuthOptions = {
                         body: JSON.stringify(loginData),
                     });
 
-                    const apiResponse: ApiResponse<AuthResponse> = await response.json();
+                    // Primeiro pega o texto da resposta para lidar com respostas vazias/inválidas
+                    const responseText = await response.text();
+                    let apiResponse: ApiResponse<AuthResponse>;
+
+                    try {
+                        apiResponse = JSON.parse(responseText);
+                    } catch (parseError) {
+                        console.error("Erro ao fazer parse da resposta de login:", {
+                            error: parseError,
+                            status: response.status,
+                            responseText: responseText.substring(0, 200), // Primeiros 200 chars
+                            url: buildApiUrl(AUTH_LOGIN_PATH)
+                        });
+                        return null;
+                    }
 
                     if (!response.ok) {
                         console.error("Erro HTTP na autenticação:", {
