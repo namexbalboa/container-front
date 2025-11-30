@@ -2,6 +2,9 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 // Proxy de login: encaminha requisição ao backend real
 export async function POST(request: NextRequest) {
   try {
