@@ -21,61 +21,83 @@ export const empresaCreateSchema = z.object({
 
   nomeFantasia: z.string()
     .max(255, "Nome fantasia deve ter no máximo 255 caracteres")
-    .optional(),
+    .optional()
+    .or(z.literal("")),
 
   cnpj: z.string()
-    .regex(cnpjRegex, "CNPJ inválido. Use o formato: 00.000.000/0000-00 ou 14 dígitos"),
+    .min(1, "CNPJ é obrigatório")
+    .refine((val) => {
+      const cleaned = val.replace(/\D/g, "");
+      return cleaned.length === 14;
+    }, "CNPJ deve ter 14 dígitos"),
 
   inscricaoEstadual: z.string()
     .max(20, "Inscrição estadual deve ter no máximo 20 caracteres")
-    .optional(),
+    .optional()
+    .or(z.literal("")),
 
   telefone: z.string()
     .max(20, "Telefone deve ter no máximo 20 caracteres")
-    .optional(),
+    .optional()
+    .or(z.literal("")),
 
   emailComercial: z.string()
-    .regex(emailRegex, "Email inválido")
     .optional()
-    .or(z.literal("")),
+    .or(z.literal(""))
+    .refine((val) => {
+      if (!val || val === "") return true;
+      return emailRegex.test(val);
+    }, "Email inválido"),
 
   site: z.string()
-    .url("URL inválida")
     .optional()
-    .or(z.literal("")),
+    .or(z.literal(""))
+    .refine((val) => {
+      if (!val || val === "") return true;
+      return /^https?:\/\/.+/.test(val);
+    }, "URL inválida"),
 
   endereco: z.string()
     .max(255, "Endereço deve ter no máximo 255 caracteres")
-    .optional(),
+    .optional()
+    .or(z.literal("")),
 
   numero: z.string()
     .max(20, "Número deve ter no máximo 20 caracteres")
-    .optional(),
+    .optional()
+    .or(z.literal("")),
 
   complemento: z.string()
     .max(100, "Complemento deve ter no máximo 100 caracteres")
-    .optional(),
+    .optional()
+    .or(z.literal("")),
 
   bairro: z.string()
     .max(100, "Bairro deve ter no máximo 100 caracteres")
-    .optional(),
+    .optional()
+    .or(z.literal("")),
 
   cidade: z.string()
     .max(100, "Cidade deve ter no máximo 100 caracteres")
-    .optional(),
+    .optional()
+    .or(z.literal("")),
 
   estado: z.string()
-    .length(2, "Estado deve ter 2 caracteres (UF)")
-    .optional(),
+    .optional()
+    .or(z.literal(""))
+    .refine((val) => {
+      if (!val || val === "") return true;
+      return val.length === 2;
+    }, "Estado deve ter 2 caracteres (UF)"),
 
   cep: z.string()
-    .regex(cepRegex, "CEP inválido. Use o formato: 00000-000 ou 8 dígitos")
     .optional()
     .or(z.literal("")),
 
   observacoes: z.string()
     .max(1000, "Observações devem ter no máximo 1000 caracteres")
-    .optional(),
+    .optional()
+    .or(z.literal("")),
 });
 
 // Schema para Empresa (Update)
@@ -165,6 +187,25 @@ export function formatCEP(cep: string): string {
   const cleaned = cep.replace(/\D/g, "");
   if (cleaned.length !== 8) return cep;
   return cleaned.replace(/^(\d{5})(\d{3})$/, "$1-$2");
+}
+
+// Helper para formatar Telefone
+export function formatTelefone(telefone: string): string {
+  const cleaned = telefone.replace(/\D/g, "");
+
+  // (00) 0000-0000 ou (00) 00000-0000
+  if (cleaned.length === 10) {
+    return cleaned.replace(/^(\d{2})(\d{4})(\d{4})$/, "($1) $2-$3");
+  } else if (cleaned.length === 11) {
+    return cleaned.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3");
+  }
+
+  return telefone;
+}
+
+// Helper para remover formatação
+export function removeMask(value: string): string {
+  return value.replace(/\D/g, "");
 }
 
 // Helper para validar CNPJ

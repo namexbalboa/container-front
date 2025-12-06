@@ -3,10 +3,12 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import { empresaCreateSchema, empresaUpdateSchema, formatCNPJ, formatCEP } from "@/lib/empresas/validations";
+import { empresaCreateSchema, empresaUpdateSchema, formatCNPJ, formatCEP, formatTelefone, removeMask } from "@/lib/empresas/validations";
 import { criarEmpresa, atualizarEmpresa } from "@/lib/empresas/api";
 import type { Empresa, EmpresaCreate, EmpresaUpdate } from "@/types/empresa";
 import { useState } from "react";
+import type { ClienteCreate, ClienteUpdate } from "@/types/api";
+import { toast } from "sonner";
 
 interface EmpresaFormProps {
   empresa: Empresa | null;
@@ -31,17 +33,52 @@ export function EmpresaForm({ empresa, onClose, onSuccess }: EmpresaFormProps) {
     try {
       setLoading(true);
 
+      // Adaptar dados para o formato da API
+      const cnpjLimpo = removeMask(data.cnpj);
+
+      console.log("CNPJ digitado:", data.cnpj);
+      console.log("CNPJ limpo (só números):", cnpjLimpo);
+
+      const apiData: EmpresaCreate = {
+        razaoSocial: data.razaoSocial,
+        nomeFantasia: data.nomeFantasia || undefined,
+        cnpj: cnpjLimpo, // Enviar sem formatação (apenas números)
+        inscricaoEstadual: data.inscricaoEstadual || undefined,
+        telefone: data.telefone ? removeMask(data.telefone) : undefined,
+        email: data.emailComercial || undefined, // Mapear emailComercial para email
+        emailComercial: data.emailComercial || undefined,
+        site: data.site || undefined,
+        endereco: data.endereco || undefined,
+        numero: data.numero || undefined,
+        complemento: data.complemento || undefined,
+        bairro: data.bairro || undefined,
+        cidade: data.cidade || undefined,
+        estado: data.estado || undefined,
+        cep: data.cep ? removeMask(data.cep) : undefined,
+        observacoes: data.observacoes || undefined,
+      };
+
+      console.log("Enviando dados:", apiData);
+
       if (isEdit) {
-        await atualizarEmpresa(empresa!.idCliente, data as EmpresaUpdate);
-        alert("Empresa atualizada com sucesso!");
+        const response = await atualizarEmpresa(empresa!.idCliente, apiData as ClienteUpdate);
+        console.log("Resposta atualização:", response);
+        toast.success("Empresa atualizada com sucesso!");
       } else {
-        await criarEmpresa(data as EmpresaCreate);
-        alert("Empresa criada com sucesso!");
+        const response = await criarEmpresa(apiData as ClienteCreate);
+        console.log("Resposta criação:", response);
+        toast.success("Empresa criada com sucesso!");
       }
 
       onSuccess();
     } catch (error: any) {
-      alert(`Erro: ${error.message}`);
+      console.error("Erro capturado:", error);
+      console.error("error.message:", error?.message);
+      console.error("error.error:", error?.error);
+
+      const errorMessage = error?.message || error?.error || "Erro desconhecido ao salvar empresa";
+      console.log("Exibindo toast.error com mensagem:", errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -98,8 +135,13 @@ export function EmpresaForm({ empresa, onClose, onSuccess }: EmpresaFormProps) {
                   </label>
                   <input
                     type="text"
-                    {...register("cnpj")}
+                    {...register("cnpj", {
+                      onChange: (e) => {
+                        e.target.value = formatCNPJ(e.target.value);
+                      }
+                    })}
                     placeholder="00.000.000/0000-00"
+                    maxLength={18}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                   />
                   {errors.cnpj && (
@@ -130,8 +172,13 @@ export function EmpresaForm({ empresa, onClose, onSuccess }: EmpresaFormProps) {
                   </label>
                   <input
                     type="text"
-                    {...register("telefone")}
-                    placeholder="(00) 0000-0000"
+                    {...register("telefone", {
+                      onChange: (e) => {
+                        e.target.value = formatTelefone(e.target.value);
+                      }
+                    })}
+                    placeholder="(00) 00000-0000"
+                    maxLength={15}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                   />
                 </div>
@@ -242,8 +289,13 @@ export function EmpresaForm({ empresa, onClose, onSuccess }: EmpresaFormProps) {
                   </label>
                   <input
                     type="text"
-                    {...register("cep")}
+                    {...register("cep", {
+                      onChange: (e) => {
+                        e.target.value = formatCEP(e.target.value);
+                      }
+                    })}
                     placeholder="00000-000"
+                    maxLength={9}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                   />
                 </div>

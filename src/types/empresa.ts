@@ -58,6 +58,7 @@ export interface EmpresaCreate {
   cnpj: string;
   inscricaoEstadual?: string;
   telefone?: string;
+  email?: string; // Campo email obrigatório pela API
   emailComercial?: string;
   site?: string;
   endereco?: string;
