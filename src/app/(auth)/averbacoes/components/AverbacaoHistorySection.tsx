@@ -82,7 +82,7 @@ export function AverbacaoHistorySection({ averbacao }: Props) {
         }
       } catch (error) {
         console.error("Erro ao carregar histórico da averbação:", error);
-        showAlert("error", "Não foi possível carregar o histórico de alterações.");
+        showAlert("Não foi possível carregar o histórico de alterações.");
         setHistorico(buildFallbackHistory(averbacao));
       } finally {
         setLoading(false);

@@ -101,7 +101,7 @@ export default function AverbacoesPage() {
         }
       } catch (error) {
         console.error("Erro ao carregar combos de averbações:", error);
-        showAlert("error", "Erro ao carregar dados auxiliares.");
+        showAlert("Erro ao carregar dados auxiliares.");
       }
     };
 
@@ -154,7 +154,7 @@ export default function AverbacoesPage() {
       }
     } catch (error) {
       console.error("Erro ao listar averbações:", error);
-      showAlert("error", "Erro ao listar averbações.");
+      showAlert("Erro ao listar averbações.");
       setAverbacoes([]);
     } finally {
       setIsLoading(false);
@@ -257,7 +257,7 @@ export default function AverbacoesPage() {
       const response = await apiService.deleteAverbacao(deleteModal.averbacaoId);
 
       if (response.success) {
-        showAlert("success", "Averbação excluída com sucesso!");
+        showAlert("Averbação excluída com sucesso!");
         setDeleteModal({ isOpen: false, averbacaoId: null });
         fetchAverbacoes();
       } else {
@@ -265,7 +265,7 @@ export default function AverbacoesPage() {
       }
     } catch (error) {
       console.error("Erro ao excluir averbação:", error);
-      showAlert("error", error instanceof Error ? error.message : "Erro ao excluir averbação");
+      showAlert(error instanceof Error ? error.message : "Erro ao excluir averbação");
     }
   };
 

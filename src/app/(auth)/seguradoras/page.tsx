@@ -17,10 +17,12 @@ export default function SeguradorasPage() {
     const { hasPermission } = usePermissions();
     const [seguradoras, setSeguradoras] = useState<Seguradora[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isFetching, setIsFetching] = useState(false);
+    const [isInitialMount, setIsInitialMount] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [filters, setFilters] = useState<SeguradoraFilters>({
-        nome: "",
+        nomeSeguradora: "",
         cnpj: "",
         status: undefined,
         cidade: "",
@@ -43,7 +45,11 @@ export default function SeguradorasPage() {
 
     const fetchSeguradoras = async () => {
         try {
-            setIsLoading(true);
+            if (isInitialMount) {
+                setIsLoading(true);
+            } else {
+                setIsFetching(true);
+            }
             setError(null);
             const response = await apiService.getSeguradoras({
                 ...filters,
@@ -59,7 +65,12 @@ export default function SeguradorasPage() {
             console.error("Erro ao carregar seguradoras:", err);
             setError("Erro ao carregar seguradoras");
         } finally {
-            setIsLoading(false);
+            if (isInitialMount) {
+                setIsLoading(false);
+                setIsInitialMount(false);
+            } else {
+                setIsFetching(false);
+            }
         }
     };
 
@@ -80,7 +91,7 @@ export default function SeguradorasPage() {
 
     const handleClearFilters = () => {
         const emptyFilters: SeguradoraFilters = {
-            nome: "",
+            nomeSeguradora: "",
             cnpj: "",
             status: undefined,
             cidade: "",
@@ -159,6 +170,14 @@ export default function SeguradorasPage() {
                 onClearFilters={handleClearFilters}
             />
 
+            {/* Indicador de Loading durante busca */}
+            {isFetching && (
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-3">
+                    <div className="animate-spin h-5 w-5 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                    <p className="text-blue-700 text-sm font-medium">Carregando seguradoras...</p>
+                </div>
+            )}
+
             {/* Lista de Seguradoras */}
             <ModernTabs defaultValue="grid" className="mt-6" onTabChange={(value) => setViewMode(value as "grid" | "table")}>
                 <ModernTabsList>
@@ -185,8 +204,8 @@ export default function SeguradorasPage() {
                 </ModernTabsList>
 
                 <ModernTabsContent value="grid" className="mt-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                    {seguradoras.length === 0 ? (
+                    <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6 transition-opacity duration-200 ${isFetching ? 'opacity-50' : 'opacity-100'}`}>
+                    {seguradoras.length === 0 && !isFetching ? (
                         <div className="col-span-full text-center py-12">
                             <p className="text-gray-500 text-lg">
                                 Nenhuma seguradora encontrada
@@ -205,8 +224,8 @@ export default function SeguradorasPage() {
                 </ModernTabsContent>
 
                 <ModernTabsContent value="table" className="mt-6">
-                    <div className="bg-white rounded-lg shadow mb-6">
-                    {seguradoras.length === 0 ? (
+                    <div className={`bg-white rounded-lg shadow mb-6 transition-opacity duration-200 ${isFetching ? 'opacity-50' : 'opacity-100'}`}>
+                    {seguradoras.length === 0 && !isFetching ? (
                         <div className="p-8 text-center">
                             <p className="text-gray-500">
                                 Nenhuma seguradora encontrada
@@ -222,6 +241,9 @@ export default function SeguradorasPage() {
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             CNPJ
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Endereço
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Status
@@ -245,6 +267,17 @@ export default function SeguradorasPage() {
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="text-sm text-gray-900 dark:text-white">
                                                     {seguradora.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5")}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="text-sm text-gray-900 max-w-xs truncate" title={typeof seguradora.endereco === 'string' ? seguradora.endereco : seguradora.endereco ? `${seguradora.endereco.cidade}/${seguradora.endereco.estado}` : '-'}>
+                                                    {typeof seguradora.endereco === 'string'
+                                                        ? seguradora.endereco
+                                                        : seguradora.endereco
+                                                        ? `${seguradora.endereco.cidade}/${seguradora.endereco.estado}`
+                                                        : seguradora.cidade && seguradora.estado
+                                                        ? `${seguradora.cidade}/${seguradora.estado}`
+                                                        : '-'}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">

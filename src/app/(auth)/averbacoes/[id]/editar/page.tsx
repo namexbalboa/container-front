@@ -32,7 +32,7 @@ export default function EditarAverbacaoPage() {
         setAverbacao(response.data);
       } catch (error) {
         console.error("Erro ao carregar averbação:", error);
-        showAlert("error", "Não foi possível carregar a averbação para edição.");
+        showAlert("Não foi possível carregar a averbação para edição.");
       } finally {
         setLoading(false);
       }
@@ -49,7 +49,7 @@ export default function EditarAverbacaoPage() {
       throw new Error(response.error || "Erro ao atualizar averbação");
     }
 
-    showAlert("success", "Averbação atualizada com sucesso.");
+    showAlert("Averbação atualizada com sucesso.");
     router.push(`/averbacoes/${averbacaoId}`);
     return response.data;
   };

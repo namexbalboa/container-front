@@ -46,7 +46,7 @@ export function Step1InfoGerais({ data, onUpdate }: Step1InfoGeraisProps) {
         }
       } catch (error) {
         console.error("Erro ao carregar dados:", error);
-        showAlert("error", "Erro ao carregar empresas e seguradoras.");
+        showAlert("Erro ao carregar empresas e seguradoras.");
       } finally {
         setIsLoading(false);
       }

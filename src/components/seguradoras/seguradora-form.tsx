@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Seguradora, SeguradoraCreate, SeguradoraUpdate } from "@/types/api";
+import { buscarCep } from "@/lib/cep";
 
 interface BaseSeguradoraFormProps {
     onCancel: () => void;
@@ -30,11 +31,12 @@ export default function SeguradoraForm({
     mode 
 }: SeguradoraFormProps) {
     const [formData, setFormData] = useState<SeguradoraCreate>({
-        nomeSeguradora: "",
+        razaoSocial: "",
         cnpj: "",
         email: "",
         telefone: "",
-        celular: "",
+        susep: "",
+        site: "",
         endereco: {
             cep: "",
             logradouro: "",
@@ -42,44 +44,49 @@ export default function SeguradoraForm({
             complemento: "",
             bairro: "",
             cidade: "",
-            estado: "",
-            pais: ""
+            estado: ""
         },
-        observacoes: ""
+        idCorretor: undefined
     });
 
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [loadingCep, setLoadingCep] = useState(false);
 
     useEffect(() => {
         if (seguradora && mode === "edit") {
             // Parse endereco if it's a string
             let enderecoObj = {
-                cep: seguradora.cep || "",
+                cep: "",
                 logradouro: "",
                 numero: "",
                 complemento: "",
                 bairro: "",
-                cidade: seguradora.cidade || "",
-                estado: seguradora.estado || "",
-                pais: "Brasil"
+                cidade: "",
+                estado: ""
             };
 
             // If endereco is an object, use it directly
             if (seguradora.endereco && typeof seguradora.endereco === 'object') {
-                enderecoObj = { ...enderecoObj, ...seguradora.endereco };
-            } else if (typeof seguradora.endereco === 'string' && seguradora.endereco) {
-                // If it's a string, parse it (best effort)
-                enderecoObj.logradouro = seguradora.endereco;
+                enderecoObj = {
+                    cep: seguradora.endereco.cep || "",
+                    logradouro: seguradora.endereco.logradouro || "",
+                    numero: seguradora.endereco.numero || "",
+                    complemento: seguradora.endereco.complemento || "",
+                    bairro: seguradora.endereco.bairro || "",
+                    cidade: seguradora.endereco.cidade || "",
+                    estado: seguradora.endereco.estado || ""
+                };
             }
 
             setFormData({
-                nomeSeguradora: seguradora.nomeSeguradora,
+                razaoSocial: seguradora.nomeSeguradora,
                 cnpj: seguradora.cnpj,
                 email: seguradora.email || "",
                 telefone: seguradora.telefone || "",
-                celular: "", // celular não existe no schema de Seguradora
+                susep: "",
+                site: "",
                 endereco: enderecoObj,
-                observacoes: seguradora.observacoes || ""
+                idCorretor: undefined
             });
         }
     }, [seguradora, mode]);
@@ -102,7 +109,57 @@ export default function SeguradoraForm({
         return numbers.replace(/^(\d{5})(\d{3})$/, "$1-$2");
     };
 
-    const handleInputChange = (field: string, value: string) => {
+    const handleCepChange = async (cep: string) => {
+        const cepLimpo = cep.replace(/\D/g, "");
+
+        // Atualiza o CEP no formulário
+        handleInputChange("endereco.cep", cepLimpo);
+
+        // Se tiver 8 dígitos, busca o endereço
+        if (cepLimpo.length === 8) {
+            setLoadingCep(true);
+
+            try {
+                const resultado = await buscarCep(cepLimpo);
+
+                // Preenche os campos com os dados retornados
+                setFormData(prev => ({
+                    ...prev,
+                    endereco: {
+                        cep: cepLimpo,
+                        logradouro: resultado.street || "",
+                        numero: prev.endereco?.numero || "",
+                        complemento: prev.endereco?.complemento || "",
+                        bairro: resultado.neighborhood || "",
+                        cidade: resultado.city || "",
+                        estado: resultado.state || ""
+                    }
+                }));
+
+                // Limpa erro do CEP se houver
+                if (errors["endereco.cep"]) {
+                    setErrors(prev => ({
+                        ...prev,
+                        "endereco.cep": ""
+                    }));
+                }
+            } catch (error) {
+                // Exibe mensagem de erro
+                const errorMessage = error && typeof error === 'object' && 'message' in error
+                    ? (error as { message: string }).message
+                    : 'Erro ao buscar CEP';
+
+                setErrors(prev => ({
+                    ...prev,
+                    "endereco.cep": errorMessage
+                }));
+            } finally {
+                setLoadingCep(false);
+            }
+        }
+    };
+
+    const handleInputChange = (field: string, value: string | number | undefined) => {
         if (field.startsWith("endereco.")) {
             const enderecoField = field.split(".")[1];
             setFormData(prev => ({
@@ -115,7 +172,6 @@ export default function SeguradoraForm({
                     bairro: "",
                     cidade: "",
                     estado: "",
-                    pais: "",
                     ...prev.endereco,
                     [enderecoField]: value
                 }
@@ -139,8 +195,8 @@ export default function SeguradoraForm({
     const validateForm = () => {
         const newErrors: Record<string, string> = {};
 
-        if (!formData.nomeSeguradora.trim()) {
-            newErrors.nomeSeguradora = "Nome é obrigatório";
+        if (!formData.razaoSocial.trim()) {
+            newErrors.razaoSocial = "Razão Social é obrigatória";
         }
 
         if (!formData.cnpj.trim()) {
@@ -149,8 +205,14 @@ export default function SeguradoraForm({
             newErrors.cnpj = "CNPJ deve ter 14 dígitos";
         }
 
-        if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        if (!formData.email.trim()) {
+            newErrors.email = "Email é obrigatório";
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
             newErrors.email = "Email inválido";
+        }
+
+        if (!formData.telefone.trim()) {
+            newErrors.telefone = "Telefone é obrigatório";
         }
 
         if (formData.endereco?.cep && formData.endereco.cep.replace(/\D/g, "").length !== 8) {
@@ -170,15 +232,25 @@ export default function SeguradoraForm({
 
         try {
             // Remover formatação antes de enviar
-            const dataToSubmit = {
-                ...formData,
+            const dataToSubmit: SeguradoraCreate = {
+                razaoSocial: formData.razaoSocial,
                 cnpj: formData.cnpj.replace(/\D/g, ""),
-                telefone: formData.telefone ? formData.telefone.replace(/\D/g, "") : "",
-                celular: formData.celular ? formData.celular.replace(/\D/g, "") : "",
-                endereco: formData.endereco ? {
-                    ...formData.endereco,
-                    cep: formData.endereco.cep ? formData.endereco.cep.replace(/\D/g, "") : ""
-                } : undefined
+                email: formData.email,
+                telefone: formData.telefone.replace(/\D/g, ""),
+                ...(formData.susep && { susep: formData.susep }),
+                ...(formData.site && { site: formData.site }),
+                ...(formData.endereco && {
+                    endereco: {
+                        logradouro: formData.endereco.logradouro,
+                        numero: formData.endereco.numero,
+                        ...(formData.endereco.complemento && { complemento: formData.endereco.complemento }),
+                        bairro: formData.endereco.bairro,
+                        cidade: formData.endereco.cidade,
+                        estado: formData.endereco.estado,
+                        cep: formData.endereco.cep.replace(/\D/g, "")
+                    }
+                }),
+                ...(formData.idCorretor && { idCorretor: formData.idCorretor })
             };
 
             await onSubmit(dataToSubmit);
@@ -203,19 +275,19 @@ export default function SeguradoraForm({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Nome da Seguradora *
+                            Razão Social *
                         </label>
                         <input
                             type="text"
-                            value={formData.nomeSeguradora}
-                            onChange={(e) => handleInputChange("nomeSeguradora", e.target.value)}
+                            value={formData.razaoSocial}
+                            onChange={(e) => handleInputChange("razaoSocial", e.target.value)}
                             className={`w-full px-3 py-2 border rounded-md bg-white text-gray-900 ${
-                                errors.nomeSeguradora ? "border-red-500" : "border-gray-300"
+                                errors.razaoSocial ? "border-red-500" : "border-gray-300"
                             }`}
                             required
                         />
-                        {errors.nomeSeguradora && (
-                            <p className="text-red-500 text-sm mt-1">{errors.nomeSeguradora}</p>
+                        {errors.razaoSocial && (
+                            <p className="text-red-500 text-sm mt-1">{errors.razaoSocial}</p>
                         )}
                     </div>
 
@@ -241,7 +313,7 @@ export default function SeguradoraForm({
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Email
+                            Email *
                         </label>
                         <input
                             type="email"
@@ -250,6 +322,7 @@ export default function SeguradoraForm({
                             className={`w-full px-3 py-2 border rounded-md bg-white text-gray-900 ${
                                 errors.email ? "border-red-500" : "border-gray-300"
                             }`}
+                            required
                         />
                         {errors.email && (
                             <p className="text-red-500 text-sm mt-1">{errors.email}</p>
@@ -258,33 +331,49 @@ export default function SeguradoraForm({
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Telefone
+                            Telefone *
                         </label>
                         <input
                             type="tel"
                             value={formatPhone(formData.telefone || "")}
                             onChange={(e) => handleInputChange("telefone", e.target.value.replace(/\D/g, ""))}
                             placeholder="(00) 0000-0000"
-                            maxLength={14}
+                            maxLength={15}
+                            className={`w-full px-3 py-2 border rounded-md bg-white text-gray-900 ${
+                                errors.telefone ? "border-red-500" : "border-gray-300"
+                            }`}
+                            required
+                        />
+                        {errors.telefone && (
+                            <p className="text-red-500 text-sm mt-1">{errors.telefone}</p>
+                        )}
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            SUSEP
+                        </label>
+                        <input
+                            type="text"
+                            value={formData.susep || ""}
+                            onChange={(e) => handleInputChange("susep", e.target.value)}
+                            placeholder="Código SUSEP"
                             className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
                         />
                     </div>
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Celular
+                            Site
                         </label>
                         <input
-                            type="tel"
-                            value={formatPhone(formData.celular || "")}
-                            onChange={(e) => handleInputChange("celular", e.target.value.replace(/\D/g, ""))}
-                            placeholder="(00) 00000-0000"
-                            maxLength={15}
+                            type="url"
+                            value={formData.site || ""}
+                            onChange={(e) => handleInputChange("site", e.target.value)}
+                            placeholder="https://www.exemplo.com.br"
                             className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
                         />
                     </div>
-
-
                 </div>
             </div>
 
@@ -298,18 +387,29 @@ export default function SeguradoraForm({
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             CEP
                         </label>
-                        <input
-                            type="text"
-                            value={formatCep(formData.endereco?.cep || "")}
-                            onChange={(e) => handleInputChange("endereco.cep", e.target.value.replace(/\D/g, ""))}
-                            placeholder="00000-000"
-                            maxLength={9}
-                            className={`w-full px-3 py-2 border rounded-md bg-white text-gray-900 ${
-                                errors["endereco.cep"] ? "border-red-500" : "border-gray-300"
-                            }`}
-                        />
+                        <div className="relative">
+                            <input
+                                type="text"
+                                value={formatCep(formData.endereco?.cep || "")}
+                                onChange={(e) => handleCepChange(e.target.value)}
+                                placeholder="00000-000"
+                                maxLength={9}
+                                disabled={loadingCep}
+                                className={`w-full px-3 py-2 border rounded-md bg-white text-gray-900 ${
+                                    errors["endereco.cep"] ? "border-red-500" : "border-gray-300"
+                                } ${loadingCep ? "opacity-50 cursor-not-allowed" : ""}`}
+                            />
+                            {loadingCep && (
+                                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                    <div className="animate-spin h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                                </div>
+                            )}
+                        </div>
                         {errors["endereco.cep"] && (
                             <p className="text-red-500 text-sm mt-1">{errors["endereco.cep"]}</p>
+                        )}
+                        {loadingCep && (
+                            <p className="text-blue-600 text-sm mt-1">Buscando endereço...</p>
                         )}
                     </div>
 
@@ -389,20 +489,6 @@ export default function SeguradoraForm({
                         </select>
                     </div>
                 </div>
-            </div>
-
-            {/* Observações */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                    Observações
-                </h3>
-                <textarea
-                    value={formData.observacoes}
-                    onChange={(e) => handleInputChange("observacoes", e.target.value)}
-                    rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
-                    placeholder="Informações adicionais sobre a seguradora..."
-                />
             </div>
 
             {/* Botões */}

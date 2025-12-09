@@ -148,7 +148,7 @@ export default function HistoricoAverbacao({ averbacao, isOpen, onClose }: Histo
             // }
         } catch (error) {
             console.error("Erro ao buscar histórico:", error);
-            showAlert("error", "Erro ao carregar histórico de alterações");
+            showAlert("Erro ao carregar histórico de alterações");
         } finally {
             setLoading(false);
         }

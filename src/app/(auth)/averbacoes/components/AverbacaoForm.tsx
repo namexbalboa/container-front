@@ -125,7 +125,7 @@ export function AverbacaoForm({ mode, initialData, onSubmit }: AverbacaoFormProp
         }
       } catch (error) {
         console.error("Erro ao carregar dados auxiliares da averbação:", error);
-        showAlert("error", "Erro ao carregar empresas e seguradoras.");
+        showAlert("Erro ao carregar empresas e seguradoras.");
       } finally {
         setLoadingCombos(false);
       }

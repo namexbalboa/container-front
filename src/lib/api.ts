@@ -1013,6 +1013,18 @@ class ApiService {
     async getPerfisAtivos() {
         return this.get<{ data: Perfil[] }>("/perfis?ativo=true&limit=1000");
     }
+
+    async getPerfilPermissoes(idPerfil: number) {
+        return this.get<{ data: any[] }>(`/perfis/${idPerfil}/permissoes`);
+    }
+
+    async syncPerfilPermissoes(idPerfil: number, permissoes: number[] | Array<{ idPermissao: number }>) {
+        return this.put<{ data: any[] }>(`/perfis/${idPerfil}/permissoes`, { permissoes });
+    }
+
+    async getAllPermissoes() {
+        return this.get<{ data: any[] }>("/permissoes?limit=100");
+    }
 }
 
 // Instância singleton

@@ -105,6 +105,13 @@ export const usePermissions = () => {
         return hasPermission(modulo, "MANAGE");
     };
 
+    const isAdmin = (): boolean => {
+        const customUser = session?.user as any;
+        // Verifica se o perfil é "Administrador" ou tem nivelAcesso 1
+        return customUser?.perfil?.nomePerfil === "Administrador" ||
+               customUser?.perfil?.nivelAcesso === 1;
+    };
+
     return {
         permissions,
         hasPermission,
@@ -116,5 +123,6 @@ export const usePermissions = () => {
         canUpdate,
         canDelete,
         canManage,
+        isAdmin,
     };
 };

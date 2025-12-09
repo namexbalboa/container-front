@@ -5,3 +5,4 @@ export { default as SeguradoraFilters } from "./seguradora-filters";
 export { default as SeguradoraContatos } from "./seguradora-contatos";
 export { default as SeguradoraDocumentos } from "./seguradora-documentos";
 export { default as SeguradoraModal } from "./seguradora-modal";
+export { default as ContatoForm } from "./contato-form";

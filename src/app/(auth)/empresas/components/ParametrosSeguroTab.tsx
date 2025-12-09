@@ -7,6 +7,7 @@ import { formatCurrency, formatDate } from "@/lib/format-utils";
 import type { ClienteContainerSeguro } from "@/types/api";
 import { Package, Edit, Trash2, Plus, History, AlertCircle } from "lucide-react";
 import EditParametroDialog from "./EditParametroDialog";
+import { usePermissions } from "@/hooks/use-permissions";
 
 interface ParametrosSeguroTabProps {
   idCliente: number;
@@ -15,15 +16,24 @@ interface ParametrosSeguroTabProps {
 
 export default function ParametrosSeguroTab({ idCliente, razaoSocial }: ParametrosSeguroTabProps) {
   const { showAlert } = useAlert();
+  const { hasPermission } = usePermissions();
   const [parametros, setParametros] = useState<ClienteContainerSeguro[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedParametro, setSelectedParametro] = useState<ClienteContainerSeguro | null>(null);
   const [showHistorico, setShowHistorico] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [historico, setHistorico] = useState<ClienteContainerSeguro[]>([]);
+  const [permissionError, setPermissionError] = useState(false);
 
   const loadParametros = async () => {
+    if (!hasPermission("PARAMETROS_SEGURO", "READ")) {
+      setPermissionError(true);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
+    setPermissionError(false);
     try {
       const response = await apiService.getParametrosSeguroCliente(idCliente);
 
@@ -34,13 +44,23 @@ export default function ParametrosSeguroTab({ idCliente, razaoSocial }: Parametr
       setParametros(response.data || []);
     } catch (error: any) {
       console.error("Erro ao carregar parâmetros:", error);
-      showAlert("error", error.message || "Erro ao carregar parâmetros de seguro");
+
+      if (error.message?.includes("permissão") || error.message?.includes("Acesso negado")) {
+        setPermissionError(true);
+      } else {
+        showAlert(error.message || "Erro ao carregar parâmetros de seguro", "error");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const handleCriarPadrao = async () => {
+    if (!hasPermission("PARAMETROS_SEGURO", "CREATE")) {
+      showAlert("Você não tem permissão para criar parâmetros de seguro", "error");
+      return;
+    }
+
     try {
       const response = await apiService.createParametrosPadrao(idCliente);
 
@@ -48,11 +68,11 @@ export default function ParametrosSeguroTab({ idCliente, razaoSocial }: Parametr
         throw new Error(response.message || "Erro ao criar parâmetros padrão");
       }
 
-      showAlert("success", `${response.data?.created || 0} parâmetros padrão criados com sucesso!`);
+      showAlert(`${response.data?.created || 0} parâmetros padrão criados com sucesso!`, "success");
       loadParametros();
     } catch (error: any) {
       console.error("Erro ao criar parâmetros padrão:", error);
-      showAlert("error", error.message || "Erro ao criar parâmetros padrão");
+      showAlert(error.message || "Erro ao criar parâmetros padrão", "error");
     }
   };
 
@@ -72,11 +92,16 @@ export default function ParametrosSeguroTab({ idCliente, razaoSocial }: Parametr
       setShowHistorico(true);
     } catch (error: any) {
       console.error("Erro ao carregar histórico:", error);
-      showAlert("error", error.message || "Erro ao carregar histórico");
+      showAlert(error.message || "Erro ao carregar histórico", "error");
     }
   };
 
   const handleDelete = async (parametro: ClienteContainerSeguro) => {
+    if (!hasPermission("PARAMETROS_SEGURO", "DELETE")) {
+      showAlert("Você não tem permissão para excluir parâmetros de seguro", "error");
+      return;
+    }
+
     if (!confirm(`Deseja realmente excluir o parâmetro para ${parametro.tipoContainer?.tipoContainer}?`)) {
       return;
     }
@@ -91,22 +116,38 @@ export default function ParametrosSeguroTab({ idCliente, razaoSocial }: Parametr
         throw new Error(response.message || "Erro ao excluir parâmetro");
       }
 
-      showAlert("success", "Parâmetro excluído com sucesso!");
+      showAlert("Parâmetro excluído com sucesso!", "success");
       loadParametros();
     } catch (error: any) {
       console.error("Erro ao excluir parâmetro:", error);
-      showAlert("error", error.message || "Erro ao excluir parâmetro");
+      showAlert(error.message || "Erro ao excluir parâmetro", "error");
     }
   };
 
   useEffect(() => {
     loadParametros();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idCliente]);
 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-sm text-zinc-500">Carregando parâmetros...</div>
+      </div>
+    );
+  }
+
+  if (permissionError) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12">
+        <AlertCircle className="h-12 w-12 text-yellow-500 mb-4" />
+        <h3 className="text-lg font-medium text-gray-900 mb-2">
+          Acesso Negado
+        </h3>
+        <p className="text-sm text-gray-600 text-center max-w-md">
+          Você não tem permissão para visualizar os parâmetros de seguro.
+          Entre em contato com o administrador do sistema.
+        </p>
       </div>
     );
   }

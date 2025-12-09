@@ -92,7 +92,7 @@ export function PerfilForm({ open, onClose, onSuccess, perfil }: PerfilFormProps
           throw new Error(response.message || "Nao foi possivel atualizar o perfil.");
         }
 
-        showAlert("success", "Perfil atualizado com sucesso!");
+        showAlert("Perfil atualizado com sucesso!");
       } else {
         const payload: PerfilCreate = {
           nomePerfil: formData.nomePerfil,
@@ -107,14 +107,14 @@ export function PerfilForm({ open, onClose, onSuccess, perfil }: PerfilFormProps
           throw new Error(response.message || "Nao foi possivel criar o perfil.");
         }
 
-        showAlert("success", "Perfil criado com sucesso!");
+        showAlert("Perfil criado com sucesso!");
       }
 
       onSuccess();
       onClose();
     } catch (error: any) {
       const message = error?.message || "Erro ao salvar perfil.";
-      showAlert("error", message);
+      showAlert(message);
     }
   };
 

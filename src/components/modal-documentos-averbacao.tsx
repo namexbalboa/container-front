@@ -35,7 +35,7 @@ export default function ModalDocumentosAverbacao({
             }
         } catch (error) {
             console.error("Erro ao carregar documentos:", error);
-            showAlert("error", "Erro ao carregar documentos");
+            showAlert("Erro ao carregar documentos");
             setDocumentos([]);
         } finally {
             setIsLoading(false);

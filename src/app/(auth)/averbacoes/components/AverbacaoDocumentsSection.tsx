@@ -54,7 +54,7 @@ export function AverbacaoDocumentsSection({ averbacao }: Props) {
           setDocumentos([]);
         } else {
           console.error("Erro ao carregar documentos da averbação:", error);
-          showAlert("error", "Não foi possível carregar os documentos.");
+          showAlert("Não foi possível carregar os documentos.");
         }
       } finally {
         setLoading(false);

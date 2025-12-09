@@ -41,24 +41,24 @@ export function Alert({ type, message, onClose }: AlertProps) {
           leaveTo="opacity-0"
         >
           <div className={`max-w-sm w-full shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden ${
-            type === "success" 
-              ? "bg-[hsl(var(--success))]/10 border border-[hsl(var(--success))]/20" 
-              : "bg-[hsl(var(--destructive))]/10 border border-[hsl(var(--destructive))]/20"
+            type === "success"
+              ? "bg-green-50 border border-green-200"
+              : "bg-red-50 border border-red-200"
           }`}>
             <div className="p-4">
               <div className="flex items-start">
                 <div className="flex-shrink-0">
                   {type === "success" ? (
-                    <CheckCircleIcon className="h-6 w-6 text-[hsl(var(--success))]" aria-hidden="true" />
+                    <CheckCircleIcon className="h-6 w-6 text-green-600" aria-hidden="true" />
                   ) : (
-                    <XCircleIcon className="h-6 w-6 text-[hsl(var(--destructive))]" aria-hidden="true" />
+                    <XCircleIcon className="h-6 w-6 text-red-600" aria-hidden="true" />
                   )}
                 </div>
                 <div className="ml-3 w-0 flex-1 pt-0.5">
                   <p className={`text-sm font-medium ${
-                    type === "success" 
-                      ? "text-[hsl(var(--success))]" 
-                      : "text-[hsl(var(--destructive))]"
+                    type === "success"
+                      ? "text-green-800"
+                      : "text-red-800"
                   }`}>
                     {message}
                   </p>
@@ -68,8 +68,8 @@ export function Alert({ type, message, onClose }: AlertProps) {
                     type="button"
                     className={`inline-flex rounded-md p-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                       type === "success"
-                        ? "text-[hsl(var(--success))] hover:bg-[hsl(var(--success))]/10 focus:ring-[hsl(var(--success))]"
-                        : "text-[hsl(var(--destructive))] hover:bg-[hsl(var(--destructive))]/10 focus:ring-[hsl(var(--destructive))]"
+                        ? "text-green-600 hover:bg-green-100 focus:ring-green-500"
+                        : "text-red-600 hover:bg-red-100 focus:ring-red-500"
                     }`}
                     onClick={() => {
                       setShow(false);
@@ -83,15 +83,15 @@ export function Alert({ type, message, onClose }: AlertProps) {
               </div>
             </div>
             <div className={`h-1 w-full ${
-              type === "success" 
-                ? "bg-[hsl(var(--success))]" 
-                : "bg-[hsl(var(--destructive))]"
+              type === "success"
+                ? "bg-green-200"
+                : "bg-red-200"
             }`}>
-              <div 
+              <div
                 className={`h-full ${
-                  type === "success" 
-                    ? "bg-[hsl(var(--success))]" 
-                    : "bg-[hsl(var(--destructive))]"
+                  type === "success"
+                    ? "bg-green-600"
+                    : "bg-red-600"
                 }`}
                 style={{
                   width: '100%',

@@ -6,7 +6,7 @@ import { Alert } from "@/components/alert";
 type AlertType = "success" | "error";
 
 interface AlertContextType {
-  showAlert: (type: AlertType, message: string) => void;
+  showAlert: (message: string, type?: AlertType) => void;
 }
 
 const AlertContext = createContext<AlertContextType | undefined>(undefined);
@@ -14,7 +14,7 @@ const AlertContext = createContext<AlertContextType | undefined>(undefined);
 export function AlertProvider({ children }: { children: ReactNode }) {
   const [alert, setAlert] = useState<{ type: AlertType; message: string } | null>(null);
 
-  const showAlert = useCallback((type: AlertType, message: string) => {
+  const showAlert = useCallback((message: string, type: AlertType = "error") => {
     setAlert({ type, message });
   }, []);
 

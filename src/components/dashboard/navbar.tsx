@@ -63,7 +63,7 @@ export default function Navbar({ setSidebarOpen }: NavbarProps) {
                 <Menu.Item>
                   {({ active }) => (
                     <button
-                      onClick={() => signOut()}
+                      onClick={() => signOut({ callbackUrl: '/login' })}
                       className={`
                         block px-4 py-2.5 text-sm w-full text-left transition-colors rounded-md
                         ${active

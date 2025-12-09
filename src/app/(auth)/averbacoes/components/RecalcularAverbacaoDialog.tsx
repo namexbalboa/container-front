@@ -34,12 +34,12 @@ export default function RecalcularAverbacaoDialog({
       setResultado(response.data);
 
       if (response.data.alterado) {
-        showAlert("success", "Averbação recalculada com sucesso!");
+        showAlert("Averbação recalculada com sucesso!");
       } else {
-        showAlert("success", "Valores já estão atualizados. Nenhuma alteração necessária.");
+        showAlert("Valores já estão atualizados. Nenhuma alteração necessária.");
       }
     } catch (error: any) {
-      showAlert("error", error.message || "Erro ao recalcular averbação");
+      showAlert(error.message || "Erro ao recalcular averbação");
     } finally {
       setLoading(false);
     }

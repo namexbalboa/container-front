@@ -98,16 +98,24 @@ export default function SeguradoraCard({ seguradora, onUpdate }: SeguradoraCardP
             {seguradora.endereco && (
                 <div className="mb-4 p-3 bg-gray-50  rounded">
                     <h4 className="text-sm font-medium text-gray-900  mb-1">Endereço</h4>
-                    <p className="text-sm text-gray-600 ">
-                        {seguradora.endereco.logradouro}, {seguradora.endereco.numero}
-                        {seguradora.endereco.complemento && `, ${seguradora.endereco.complemento}`}
-                    </p>
-                    <p className="text-sm text-gray-600 ">
-                        {seguradora.endereco.bairro} - {seguradora.endereco.cidade}/{seguradora.endereco.estado}
-                    </p>
-                    <p className="text-sm text-gray-600 ">
-                        CEP: {seguradora.endereco.cep}
-                    </p>
+                    {typeof seguradora.endereco === 'string' ? (
+                        <p className="text-sm text-gray-600 ">
+                            {seguradora.endereco}
+                        </p>
+                    ) : (
+                        <>
+                            <p className="text-sm text-gray-600 ">
+                                {seguradora.endereco.logradouro}, {seguradora.endereco.numero}
+                                {seguradora.endereco.complemento && `, ${seguradora.endereco.complemento}`}
+                            </p>
+                            <p className="text-sm text-gray-600 ">
+                                {seguradora.endereco.bairro} - {seguradora.endereco.cidade}/{seguradora.endereco.estado}
+                            </p>
+                            <p className="text-sm text-gray-600 ">
+                                CEP: {seguradora.endereco.cep}
+                            </p>
+                        </>
+                    )}
                 </div>
             )}
 

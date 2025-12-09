@@ -40,19 +40,19 @@ export default function LoginForm() {
           errorMessage = "Erro no servidor. Tente novamente mais tarde.";
         }
 
-        showAlert("error", errorMessage);
+        showAlert(errorMessage, "error");
         setLoading(false);
         return;
       }
 
       if (!result?.ok) {
-        showAlert("error", "Não foi possível completar o login. Tente novamente.");
+        showAlert("Não foi possível completar o login. Tente novamente.");
         setLoading(false);
         return;
       }
 
       // Successfully logged in - aguarda um pouco para a sessão ser estabelecida
-      showAlert("success", "Login realizado com sucesso!");
+      showAlert("Login realizado com sucesso!", "success");
 
       // Pequeno delay para garantir que a sessão NextAuth esteja pronta
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -64,7 +64,7 @@ export default function LoginForm() {
       const errorMessage = error instanceof Error
         ? error.message
         : "Ocorreu um erro ao tentar fazer login. Tente novamente.";
-      showAlert("error", errorMessage);
+      showAlert(errorMessage, "error");
       setLoading(false);
     }
   };

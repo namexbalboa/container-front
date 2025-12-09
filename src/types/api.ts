@@ -666,7 +666,7 @@ export interface Cliente {
     email: string;
     telefone?: string;
     endereco?: string;
-    status: "ATIVO" | "INATIVO" | "SUSPENSO";
+    status: "ativo" | "inativo" | "suspenso";
     dataCriacao: string;
     dataAtualizacao?: string;
     filiais?: Cliente[];
@@ -741,7 +741,10 @@ export interface Seguradora {
     email: string;
     telefone: string;
     celular?: string;
-    endereco?: SeguradoraEndereco;
+    endereco?: SeguradoraEndereco | string;
+    cidade?: string;
+    estado?: string;
+    cep?: string;
     contatos?: SeguradoraContato[];
     documentos?: SeguradoraDocumento[];
     status: "ativa" | "inativa" | "suspensa";
@@ -792,13 +795,22 @@ export interface SeguradoraDocumento {
 }
 
 export interface SeguradoraCreate {
-    nomeSeguradora: string;
+    razaoSocial: string;
     cnpj: string;
     email: string;
     telefone: string;
-    celular?: string;
-    endereco?: Omit<SeguradoraEndereco, "id">;
-    observacoes?: string;
+    susep?: string;
+    site?: string;
+    endereco?: {
+        logradouro: string;
+        numero: string;
+        complemento?: string;
+        bairro: string;
+        cidade: string;
+        estado: string;
+        cep: string;
+    };
+    idCorretor?: number;
 }
 
 export interface SeguradoraUpdate {
@@ -812,7 +824,7 @@ export interface SeguradoraUpdate {
 }
 
 export interface SeguradoraFilters extends PaginationParams {
-    nome?: string;
+    nomeSeguradora?: string;
     cnpj?: string;
     status?: Seguradora["status"];
     cidade?: string;

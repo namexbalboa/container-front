@@ -29,7 +29,7 @@ export default function SeguradoraFilters({
 
     const handleClearFilters = () => {
         const emptyFilters: FiltersType = {
-            nome: "",
+            nomeSeguradora: "",
             cnpj: "",
             status: undefined,
             cidade: "",
@@ -85,8 +85,8 @@ export default function SeguradoraFilters({
                     </label>
                     <input
                         type="text"
-                        value={localFilters.nome || ""}
-                        onChange={(e) => handleFilterChange("nome", e.target.value)}
+                        value={localFilters.nomeSeguradora || ""}
+                        onChange={(e) => handleFilterChange("nomeSeguradora", e.target.value)}
                         placeholder="Buscar por nome..."
                         className="w-full px-3 py-2 border border-gray-300  rounded-md bg-white  text-gray-900 "
                     />

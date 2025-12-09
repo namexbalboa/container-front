@@ -6,9 +6,10 @@ import { XMarkIcon } from "@heroicons/react/24/outline";
 import { empresaCreateSchema, empresaUpdateSchema, formatCNPJ, formatCEP, formatTelefone, removeMask } from "@/lib/empresas/validations";
 import { criarEmpresa, atualizarEmpresa } from "@/lib/empresas/api";
 import type { Empresa, EmpresaCreate, EmpresaUpdate } from "@/types/empresa";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { ClienteCreate, ClienteUpdate } from "@/types/api";
 import { toast } from "sonner";
+import { buscarCep } from "@/lib/cep";
 
 interface EmpresaFormProps {
   empresa: Empresa | null;
@@ -18,16 +19,51 @@ interface EmpresaFormProps {
 
 export function EmpresaForm({ empresa, onClose, onSuccess }: EmpresaFormProps) {
   const [loading, setLoading] = useState(false);
+  const [loadingCep, setLoadingCep] = useState(false);
   const isEdit = !!empresa;
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    setValue,
+    watch,
   } = useForm({
     resolver: zodResolver(isEdit ? empresaUpdateSchema : empresaCreateSchema),
     defaultValues: empresa || {},
   });
+
+  const cepValue = watch("cep");
+
+  useEffect(() => {
+    const handleCepLookup = async () => {
+      if (!cepValue) return;
+
+      const cepLimpo = removeMask(cepValue);
+
+      if (cepLimpo.length === 8) {
+        setLoadingCep(true);
+        try {
+          const resultado = await buscarCep(cepLimpo);
+
+          setValue("endereco", resultado.street || "");
+          setValue("bairro", resultado.neighborhood || "");
+          setValue("cidade", resultado.city || "");
+          setValue("estado", resultado.state || "");
+        } catch (error) {
+          console.error("Erro ao buscar CEP:", error);
+          const errorMessage = error && typeof error === 'object' && 'message' in error
+            ? (error as { message: string }).message
+            : 'Erro ao buscar CEP';
+          toast.error(errorMessage);
+        } finally {
+          setLoadingCep(false);
+        }
+      }
+    };
+
+    handleCepLookup();
+  }, [cepValue, setValue]);
 
   const onSubmit = async (data: any) => {
     try {
@@ -45,7 +81,6 @@ export function EmpresaForm({ empresa, onClose, onSuccess }: EmpresaFormProps) {
         cnpj: cnpjLimpo, // Enviar sem formatação (apenas números)
         inscricaoEstadual: data.inscricaoEstadual || undefined,
         telefone: data.telefone ? removeMask(data.telefone) : undefined,
-        email: data.emailComercial || undefined, // Mapear emailComercial para email
         emailComercial: data.emailComercial || undefined,
         site: data.site || undefined,
         endereco: data.endereco || undefined,
@@ -185,7 +220,7 @@ export function EmpresaForm({ empresa, onClose, onSuccess }: EmpresaFormProps) {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Email Comercial
+                    Email Comercial *
                   </label>
                   <input
                     type="email"
@@ -287,17 +322,28 @@ export function EmpresaForm({ empresa, onClose, onSuccess }: EmpresaFormProps) {
                   <label className="block text-sm font-medium text-gray-700">
                     CEP
                   </label>
-                  <input
-                    type="text"
-                    {...register("cep", {
-                      onChange: (e) => {
-                        e.target.value = formatCEP(e.target.value);
-                      }
-                    })}
-                    placeholder="00000-000"
-                    maxLength={9}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      {...register("cep", {
+                        onChange: (e) => {
+                          e.target.value = formatCEP(e.target.value);
+                        }
+                      })}
+                      placeholder="00000-000"
+                      maxLength={9}
+                      disabled={loadingCep}
+                      className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${loadingCep ? "opacity-50 cursor-not-allowed" : ""}`}
+                    />
+                    {loadingCep && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <div className="animate-spin h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                      </div>
+                    )}
+                  </div>
+                  {loadingCep && (
+                    <p className="mt-1 text-sm text-blue-600">Buscando endereço...</p>
+                  )}
                 </div>
               </div>
             </div>

@@ -144,7 +144,7 @@ export default function ContainersPage() {
                 console.error("Erro ao carregar containers", error);
                 setContainers([]);
                 setPagination(initialPagination);
-                showAlert("error", "Erro ao carregar containers");
+                showAlert("Erro ao carregar containers");
             } finally {
                 setIsLoading(false);
             }
@@ -217,11 +217,11 @@ export default function ContainersPage() {
             if (!response.success) {
                 throw new Error(response.message || "Erro ao excluir container");
             }
-            showAlert("success", "Container excluido com sucesso");
+            showAlert("Container excluido com sucesso");
             await fetchContainers(filters);
         } catch (error) {
             console.error("Erro ao excluir container", error);
-            showAlert("error", "Erro ao excluir container");
+            showAlert("Erro ao excluir container");
         } finally {
             setDeletingId(null);
         }
@@ -265,12 +265,12 @@ export default function ContainersPage() {
                 throw new Error(response.message || "Erro ao salvar container");
             }
 
-            showAlert("success", selectedContainer ? "Container atualizado com sucesso" : "Container criado com sucesso");
+            showAlert(selectedContainer ? "Container atualizado com sucesso" : "Container criado com sucesso");
             handleCloseModal();
             await fetchContainers(filters);
         } catch (error) {
             console.error("Erro ao salvar container", error);
-            showAlert("error", error instanceof Error ? error.message : "Erro ao salvar container");
+            showAlert(error instanceof Error ? error.message : "Erro ao salvar container");
         } finally {
             setIsSaving(false);
         }

@@ -93,7 +93,7 @@ export default function ViagemDetalhesPage() {
     if (!viagem) return;
 
     if (shouldEnforcePermissions && !canRemoveTrip) {
-      showAlert("error", "Você não tem permissão para excluir viagens.");
+      showAlert("Você não tem permissão para excluir viagens.");
       return;
     }
 
@@ -114,12 +114,12 @@ export default function ViagemDetalhesPage() {
         throw new Error(response.message || "Não foi possível excluir a viagem.");
       }
 
-      showAlert("success", "Viagem excluída com sucesso.");
+      showAlert("Viagem excluída com sucesso.");
       router.push("/viagens");
     } catch (error) {
       console.error("Erro ao excluir viagem:", error);
       const message = error instanceof Error ? error.message : "Erro inesperado ao excluir a viagem.";
-      showAlert("error", message);
+      showAlert(message);
     }
   };
 

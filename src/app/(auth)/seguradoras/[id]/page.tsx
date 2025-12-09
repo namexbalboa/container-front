@@ -418,33 +418,41 @@ export default function SeguradoraDetalhesPage() {
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-2">
-                                    {seguradora.endereco.logradouro && (
-                                        <p className="text-sm text-gray-900 ">
-                                            {seguradora.endereco.logradouro}
-                                            {seguradora.endereco.numero && `, ${seguradora.endereco.numero}`}
-                                            {seguradora.endereco.complemento && ` - ${seguradora.endereco.complemento}`}
+                                    {typeof seguradora.endereco === 'string' ? (
+                                        <p className="text-sm text-gray-900">
+                                            {seguradora.endereco}
                                         </p>
-                                    )}
-                                    {seguradora.endereco.bairro && (
-                                        <p className="text-sm text-gray-900 ">
-                                            {seguradora.endereco.bairro}
-                                        </p>
-                                    )}
-                                    {(seguradora.endereco.cidade || seguradora.endereco.estado) && (
-                                        <p className="text-sm text-gray-900 ">
-                                            {seguradora.endereco.cidade}
-                                            {seguradora.endereco.estado && ` - ${seguradora.endereco.estado}`}
-                                        </p>
-                                    )}
-                                    {seguradora.endereco.cep && (
-                                        <p className="text-sm text-gray-500 ">
-                                            CEP: {seguradora.endereco.cep}
-                                        </p>
-                                    )}
-                                    {seguradora.endereco.pais && (
-                                        <p className="text-sm text-gray-500 ">
-                                            {seguradora.endereco.pais}
-                                        </p>
+                                    ) : (
+                                        <>
+                                            {seguradora.endereco.logradouro && (
+                                                <p className="text-sm text-gray-900">
+                                                    {seguradora.endereco.logradouro}
+                                                    {seguradora.endereco.numero && `, ${seguradora.endereco.numero}`}
+                                                    {seguradora.endereco.complemento && ` - ${seguradora.endereco.complemento}`}
+                                                </p>
+                                            )}
+                                            {seguradora.endereco.bairro && (
+                                                <p className="text-sm text-gray-900">
+                                                    {seguradora.endereco.bairro}
+                                                </p>
+                                            )}
+                                            {(seguradora.endereco.cidade || seguradora.endereco.estado) && (
+                                                <p className="text-sm text-gray-900">
+                                                    {seguradora.endereco.cidade}
+                                                    {seguradora.endereco.estado && ` - ${seguradora.endereco.estado}`}
+                                                </p>
+                                            )}
+                                            {seguradora.endereco.cep && (
+                                                <p className="text-sm text-gray-500">
+                                                    CEP: {seguradora.endereco.cep}
+                                                </p>
+                                            )}
+                                            {seguradora.endereco.pais && (
+                                                <p className="text-sm text-gray-500">
+                                                    {seguradora.endereco.pais}
+                                                </p>
+                                            )}
+                                        </>
                                     )}
                                 </CardContent>
                             </Card>

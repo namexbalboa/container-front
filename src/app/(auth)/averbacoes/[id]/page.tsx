@@ -55,7 +55,7 @@ export default function DetalheAverbacaoPage() {
       setAverbacao(response.data);
     } catch (error) {
       console.error("Erro ao carregar averbação:", error);
-      showAlert("error", "Não foi possível carregar os dados da averbação.");
+      showAlert("Não foi possível carregar os dados da averbação.");
     } finally {
       setLoading(false);
     }
@@ -200,10 +200,10 @@ export default function DetalheAverbacaoPage() {
       // Gerar PDF com os dados do relatório
       gerarPDFAverbacao(response.data);
 
-      showAlert("success", "PDF gerado com sucesso!");
+      showAlert("PDF gerado com sucesso!");
     } catch (error) {
       console.error("Erro ao gerar PDF:", error);
-      showAlert("error", "Não foi possível gerar o PDF da averbação.");
+      showAlert("Não foi possível gerar o PDF da averbação.");
     } finally {
       setPdfLoading(false);
     }

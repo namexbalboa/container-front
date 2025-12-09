@@ -166,21 +166,21 @@ export default function ViagensPage() {
           throw new Error(response.message || "Não foi possível excluir a viagem.");
         }
 
-        showAlert("success", "Viagem excluída com sucesso.");
+        showAlert("Viagem excluída com sucesso.");
         loadViagens(); // Recarrega a lista
       } catch (error) {
         console.error("Erro ao excluir viagem:", error);
         const message = error instanceof Error ? error.message : "Erro inesperado ao excluir a viagem.";
-        showAlert("error", message);
+        showAlert(message);
       }
     } else {
-      showAlert("error", "Você não tem permissão para excluir viagens.");
+      showAlert("Você não tem permissão para excluir viagens.");
     }
   }
 
   async function handleViewContainers(numeroCE: string) {
     if (!numeroCE) {
-      showAlert("error", "Número CE não disponível para esta viagem.");
+      showAlert("Número CE não disponível para esta viagem.");
       return;
     }
 
@@ -199,7 +199,7 @@ export default function ViagensPage() {
     } catch (error) {
       console.error("Erro ao carregar containers:", error);
       const message = error instanceof Error ? error.message : "Erro inesperado ao carregar os containers.";
-      showAlert("error", message);
+      showAlert(message);
       setContainerModalOpen(false);
     } finally {
       setLoadingContainers(false);

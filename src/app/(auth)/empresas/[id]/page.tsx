@@ -28,7 +28,7 @@ export default function EmpresaDetailPage() {
   useEffect(() => {
     const loadEmpresa = async () => {
       if (!empresaId || Number.isNaN(empresaId)) {
-        showAlert("error", "ID da empresa inválido");
+        showAlert("ID da empresa inválido", "error");
         router.push("/empresas");
         return;
       }
@@ -44,7 +44,7 @@ export default function EmpresaDetailPage() {
         setEmpresa(response.data);
       } catch (error: any) {
         console.error("Erro ao carregar empresa:", error);
-        showAlert("error", error.message || "Erro ao carregar dados da empresa");
+        showAlert(error.message || "Erro ao carregar dados da empresa");
         router.push("/empresas");
       } finally {
         setLoading(false);
@@ -155,9 +155,9 @@ export default function EmpresaDetailPage() {
                 </label>
                 <span
                   className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                    empresa.status === "ATIVO"
+                    empresa.status === "ativo"
                       ? "bg-green-100 text-green-800"
-                      : empresa.status === "INATIVO"
+                      : empresa.status === "inativo"
                       ? "bg-zinc-200 text-zinc-600"
                       : "bg-red-100 text-red-800"
                   }`}

@@ -42,7 +42,7 @@ export default function NovaAverbacaoPage() {
       // Aguardar um pouco antes de redirecionar para que o loading seja visível
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      showAlert("success", "Averbação criada com sucesso.");
+      showAlert("Averbação criada com sucesso.");
       router.push(`/averbacoes/${novaAverbacao.idAverbacao}`);
     } finally {
       // O hideLoading será gerenciado pelo LoadingContext com o tempo mínimo

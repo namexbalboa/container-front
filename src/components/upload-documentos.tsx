@@ -65,7 +65,7 @@ export default function UploadDocumentos({
             const uploadPromises = Array.from(files).map(async (file) => {
                 const validationError = validateFile(file);
                 if (validationError) {
-                    showAlert("error", `${file.name}: ${validationError}`);
+                    showAlert(`${file.name}: ${validationError}`);
                     return null;
                 }
 
@@ -78,7 +78,7 @@ export default function UploadDocumentos({
                     }
                 } catch (error) {
                     console.error(`Erro ao fazer upload de ${file.name}:`, error);
-                    showAlert("error", `Erro ao fazer upload de ${file.name}`);
+                    showAlert(`Erro ao fazer upload de ${file.name}`);
                     return null;
                 }
             });
@@ -88,11 +88,11 @@ export default function UploadDocumentos({
             
             if (successfulUploads.length > 0) {
                 onDocumentosChange([...documentos, ...successfulUploads]);
-                showAlert("success", `${successfulUploads.length} documento(s) enviado(s) com sucesso!`);
+                showAlert(`${successfulUploads.length} documento(s) enviado(s) com sucesso!`);
             }
         } catch (error) {
             console.error("Erro no upload:", error);
-            showAlert("error", "Erro ao fazer upload dos documentos");
+            showAlert("Erro ao fazer upload dos documentos");
         } finally {
             setIsUploading(false);
             if (fileInputRef.current) {
@@ -110,13 +110,13 @@ export default function UploadDocumentos({
             const response = await apiService.deleteDocumentoAverbacao(averbacaoId, documentoId);
             if (response.success) {
                 onDocumentosChange(documentos.filter(doc => doc.idDocumento !== documentoId));
-                showAlert("success", "Documento excluído com sucesso!");
+                showAlert("Documento excluído com sucesso!");
             } else {
                 throw new Error(response.error || "Erro ao excluir documento");
             }
         } catch (error) {
             console.error("Erro ao excluir documento:", error);
-            showAlert("error", "Erro ao excluir documento");
+            showAlert("Erro ao excluir documento");
         }
     };
 
@@ -133,7 +133,7 @@ export default function UploadDocumentos({
             window.URL.revokeObjectURL(url);
         } catch (error) {
             console.error("Erro ao baixar documento:", error);
-            showAlert("error", "Erro ao baixar documento");
+            showAlert("Erro ao baixar documento");
         }
     };
 

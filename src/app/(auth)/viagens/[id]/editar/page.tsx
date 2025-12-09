@@ -72,12 +72,12 @@ export default function EditarViagemPage() {
         throw new Error(response.message || "Não foi possível atualizar a viagem.");
       }
 
-      showAlert("success", "Viagem atualizada com sucesso!");
+      showAlert("Viagem atualizada com sucesso!");
       router.push(`/viagens/${viagemId}`);
     } catch (err) {
       console.error("Erro ao atualizar viagem:", err);
       const message = err instanceof Error ? err.message : "Erro inesperado ao atualizar a viagem.";
-      showAlert("error", message);
+      showAlert(message);
       throw err;
     }
   };

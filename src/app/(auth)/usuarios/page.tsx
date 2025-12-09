@@ -13,7 +13,9 @@ import { UsuarioForm } from "./components/UsuarioForm";
 import { PerfilFilters } from "./components/PerfilFilters";
 import { PerfilTable } from "./components/PerfilTable";
 import { PerfilForm } from "./components/PerfilForm";
+import EditarPermissoesDialog from "./components/EditarPermissoesDialog";
 import { useAlert } from "@/contexts/AlertContext";
+import { usePermissions } from "@/hooks/use-permissions";
 import {
   listarUsuarios,
   excluirUsuario,
@@ -135,6 +137,7 @@ function normalizePaginatedResponse<T>(
 
 export default function UsuariosPage() {
   const { showAlert } = useAlert();
+  const { isAdmin } = usePermissions();
 
   // Usuarios
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
@@ -159,6 +162,8 @@ export default function UsuariosPage() {
   const [perfisLoading, setPerfisLoading] = useState<boolean>(true);
   const [perfilModalOpen, setPerfilModalOpen] = useState(false);
   const [perfilSelecionado, setPerfilSelecionado] = useState<Perfil | null>(null);
+  const [permissoesDialogOpen, setPermissoesDialogOpen] = useState(false);
+  const [perfilParaPermissoes, setPerfilParaPermissoes] = useState<Perfil | null>(null);
 
   const loadUsuarios = useCallback(async () => {
     try {
@@ -181,7 +186,7 @@ export default function UsuariosPage() {
       setUsuarioPagination(pagination);
     } catch (error: any) {
       console.error("Erro ao carregar usuarios:", error);
-      showAlert("error", error?.message || "Erro ao carregar usuarios.");
+      showAlert(error?.message || "Erro ao carregar usuarios.");
       setUsuarios([]);
       setUsuarioPagination(DEFAULT_USUARIO_PAGINATION);
     } finally {
@@ -210,7 +215,7 @@ export default function UsuariosPage() {
       setPerfilPagination(pagination);
     } catch (error: any) {
       console.error("Erro ao carregar perfis:", error);
-      showAlert("error", error?.message || "Erro ao carregar perfis.");
+      showAlert(error?.message || "Erro ao carregar perfis.");
       setPerfis([]);
       setPerfilPagination(DEFAULT_PERFIL_PAGINATION);
     } finally {
@@ -294,11 +299,11 @@ export default function UsuariosPage() {
         throw new Error(response.message || "Nao foi possivel excluir o usuario.");
       }
 
-      showAlert("success", "Usuario excluido com sucesso!");
+      showAlert("Usuario excluido com sucesso!");
       await loadUsuarios();
     } catch (error: any) {
       console.error("Erro ao excluir usuario:", error);
-      showAlert("error", error?.message || "Erro ao excluir usuario.");
+      showAlert(error?.message || "Erro ao excluir usuario.");
     }
   };
 
@@ -325,12 +330,12 @@ export default function UsuariosPage() {
         throw new Error(response.message || "Nao foi possivel excluir o perfil.");
       }
 
-      showAlert("success", "Perfil excluido com sucesso!");
+      showAlert("Perfil excluido com sucesso!");
       await loadPerfis();
       await loadPerfisAtivos();
     } catch (error: any) {
       console.error("Erro ao excluir perfil:", error);
-      showAlert("error", error?.message || "Erro ao excluir perfil.");
+      showAlert(error?.message || "Erro ao excluir perfil.");
     }
   };
 
@@ -350,13 +355,22 @@ export default function UsuariosPage() {
       await loadPerfisAtivos();
     } catch (error: any) {
       console.error("Erro ao atualizar status do perfil:", error);
-      showAlert("error", error?.message || "Erro ao atualizar status do perfil.");
+      showAlert(error?.message || "Erro ao atualizar status do perfil.");
     }
   };
 
   const handlePerfilSaved = () => {
     void loadPerfis();
     void loadPerfisAtivos();
+  };
+
+  const handleEditPermissoes = (perfil: Perfil) => {
+    setPerfilParaPermissoes(perfil);
+    setPermissoesDialogOpen(true);
+  };
+
+  const handlePermissoesSuccess = () => {
+    loadPerfis();
   };
 
   return (
@@ -470,6 +484,7 @@ export default function UsuariosPage() {
             loading={perfisLoading}
             onPageChange={page => handlePerfilFiltersChange({ page })}
             onEdit={handleEditPerfil}
+            onEditPermissoes={isAdmin() ? handleEditPermissoes : undefined}
             onDelete={handlePerfilDeleted}
             onStatusChange={handlePerfilStatusChange}
           />
@@ -490,6 +505,19 @@ export default function UsuariosPage() {
         onSuccess={handlePerfilSaved}
         perfil={perfilSelecionado}
       />
+
+      {perfilParaPermissoes && (
+        <EditarPermissoesDialog
+          perfilId={perfilParaPermissoes.idPerfil}
+          perfilNome={perfilParaPermissoes.nomePerfil}
+          isOpen={permissoesDialogOpen}
+          onClose={() => {
+            setPermissoesDialogOpen(false);
+            setPerfilParaPermissoes(null);
+          }}
+          onSuccess={handlePermissoesSuccess}
+        />
+      )}
     </div>
   );
 }

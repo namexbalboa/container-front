@@ -10,7 +10,9 @@ import {
 } from "@heroicons/react/24/outline";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { excluirEmpresa } from "@/lib/empresas/api";
+import { DeleteConfirmationModal } from "./DeleteConfirmationModal";
 import type { Empresa } from "@/types/empresa";
+import { toast } from "sonner";
 
 interface EmpresaTableProps {
   empresas: Empresa[];
@@ -33,26 +35,29 @@ export function EmpresaTable({
   onRefresh,
 }: EmpresaTableProps) {
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [empresaToDelete, setEmpresaToDelete] = useState<Empresa | null>(null);
 
-  const handleDelete = async (empresa: Empresa) => {
-    if (
-      !confirm(
-        `Tem certeza que deseja excluir a empresa "${empresa.razaoSocial}"?\n\nEsta ação não pode ser desfeita.`
-      )
-    ) {
-      return;
-    }
+  const handleDeleteClick = (empresa: Empresa) => {
+    setEmpresaToDelete(empresa);
+  };
 
+  const handleDeleteConfirm = async (idCliente: number) => {
     try {
-      setDeletingId(empresa.idCliente);
-      await excluirEmpresa(empresa.idCliente);
-      alert("Empresa excluída com sucesso!");
+      setDeletingId(idCliente);
+      await excluirEmpresa(idCliente);
+      toast.success("Empresa excluída com sucesso!");
       onRefresh();
     } catch (error: any) {
-      alert(`Erro ao excluir empresa: ${error.message}`);
+      toast.error(`Erro ao excluir empresa: ${error.message}`);
+      throw error;
     } finally {
       setDeletingId(null);
+      setEmpresaToDelete(null);
     }
+  };
+
+  const handleCloseModal = () => {
+    setEmpresaToDelete(null);
   };
 
   if (empresas.length === 0) {
@@ -142,7 +147,7 @@ export function EmpresaTable({
                       <PencilIcon className="h-5 w-5" />
                     </button>
                     <button
-                      onClick={() => handleDelete(empresa)}
+                      onClick={() => handleDeleteClick(empresa)}
                       disabled={deletingId === empresa.idCliente}
                       className="inline-flex items-center justify-center p-1.5 text-gray-600 hover:text-gray-900 bg-white border border-gray-200 hover:bg-gray-50 rounded shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       title="Excluir"
@@ -245,6 +250,13 @@ export function EmpresaTable({
           </div>
         </div>
       )}
+
+      {/* Modal de confirmação de exclusão */}
+      <DeleteConfirmationModal
+        empresa={empresaToDelete}
+        onClose={handleCloseModal}
+        onConfirm={handleDeleteConfirm}
+      />
     </div>
   );
 }

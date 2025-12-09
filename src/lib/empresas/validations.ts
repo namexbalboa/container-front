@@ -42,12 +42,8 @@ export const empresaCreateSchema = z.object({
     .or(z.literal("")),
 
   emailComercial: z.string()
-    .optional()
-    .or(z.literal(""))
-    .refine((val) => {
-      if (!val || val === "") return true;
-      return emailRegex.test(val);
-    }, "Email inválido"),
+    .min(1, "Email é obrigatório")
+    .regex(emailRegex, "Email inválido"),
 
   site: z.string()
     .optional()

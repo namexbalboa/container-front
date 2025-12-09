@@ -117,7 +117,7 @@ export function UsuarioForm({
         if (!response.success) {
           throw new Error(response.message || "Nao foi possivel atualizar o usuario.");
         }
-        showAlert("success", "Usuario atualizado com sucesso!");
+        showAlert("Usuario atualizado com sucesso!");
       } else {
         const payload: UsuarioCreate = {
           nomeCompleto: formData.nomeCompleto,
@@ -134,14 +134,14 @@ export function UsuarioForm({
         }
 
         // O backend pode definir status padrao, entao evitamos enviar aqui.
-        showAlert("success", "Usuario criado com sucesso!");
+        showAlert("Usuario criado com sucesso!");
       }
 
       onSuccess();
       onClose();
     } catch (error: any) {
       const message = error?.message || "Erro ao salvar usuario.";
-      showAlert("error", message);
+      showAlert(message);
     }
   };
 

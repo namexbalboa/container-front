@@ -148,14 +148,14 @@ export default function SeguradoraDocumentos({ seguradoraId, documentos, onUpdat
                             onChange={handleFileUpload}
                             className="hidden"
                             accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif"
-                            disabled={isUploading}
+                            disabled={true}
                         />
                         <button
                             onClick={() => fileInputRef.current?.click()}
-                            disabled={isUploading || isLoading}
-                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors disabled:opacity-50"
+                            disabled={true}
+                            className="px-4 py-2 bg-gray-400 text-white rounded cursor-not-allowed opacity-50"
                         >
-                            {isUploading ? "Enviando..." : "Adicionar Documento"}
+                            Adicionar Documento
                         </button>
                     </div>
                 )}
@@ -183,7 +183,7 @@ export default function SeguradoraDocumentos({ seguradoraId, documentos, onUpdat
             <div className="space-y-4">
                 {documentos.length === 0 ? (
                     <div className="text-center py-8 text-gray-500 ">
-                        Nenhum documento cadastrado
+                        Módulo em desenvolvimento
                     </div>
                 ) : (
                     documentos.map((documento) => (

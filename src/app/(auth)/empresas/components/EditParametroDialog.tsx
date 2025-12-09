@@ -81,12 +81,12 @@ export default function EditParametroDialog({
         throw new Error(response.message || "Erro ao atualizar parâmetro");
       }
 
-      showAlert("success", "Parâmetro atualizado com sucesso! Nova versão criada.");
+      showAlert("Parâmetro atualizado com sucesso! Nova versão criada.");
       onSuccess();
       onClose();
     } catch (error: any) {
       console.error("Erro ao atualizar parâmetro:", error);
-      showAlert("error", error.message || "Erro ao atualizar parâmetro");
+      showAlert(error.message || "Erro ao atualizar parâmetro");
     } finally {
       setLoading(false);
     }

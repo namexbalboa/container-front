@@ -91,7 +91,7 @@ export default function ContainerFilterPage() {
                 console.error("Erro ao carregar containers", error);
                 setContainers([]);
                 setPagination(initialPagination);
-                showAlert("error", "Erro ao carregar containers");
+                showAlert("Erro ao carregar containers");
             } finally {
                 setIsLoading(false);
             }

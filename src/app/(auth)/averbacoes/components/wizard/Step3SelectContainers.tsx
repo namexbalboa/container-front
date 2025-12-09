@@ -211,7 +211,7 @@ export function Step3SelectContainers({ data, onUpdate }: Step3SelectContainersP
         }
       } catch (error) {
         console.error("Erro ao carregar containers das viagens:", error);
-        showAlert("error", "Erro ao carregar containers das viagens selecionadas.");
+        showAlert("Erro ao carregar containers das viagens selecionadas.");
       } finally {
         setIsLoadingContainers(false);
       }
