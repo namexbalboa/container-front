@@ -55,6 +55,8 @@ import {
     ParametroSeguro,
     CreateParametroSeguroData,
     UpdateParametroSeguroData,
+    CreateParametroSeguroBatchData,
+    CreateParametroSeguroBatchResponse,
     CalculoSeguroRequest,
     CalculoSeguroResponse,
     ParametroSeguroFilters,
@@ -963,6 +965,10 @@ class ApiService {
 
     async createParametroSeguroGeral(data: CreateParametroSeguroData) {
         return this.post<{ data: ParametroSeguro }>("/parametros-seguro", data);
+    }
+
+    async createParametrosSeguroBatch(data: CreateParametroSeguroBatchData) {
+        return this.post<CreateParametroSeguroBatchResponse>("/parametros-seguro/batch", data);
     }
 
     async updateParametroSeguroGeral(id: number, data: UpdateParametroSeguroData) {

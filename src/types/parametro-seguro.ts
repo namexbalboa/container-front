@@ -50,6 +50,17 @@ export interface CreateParametroSeguroData {
 
 export interface UpdateParametroSeguroData extends Partial<CreateParametroSeguroData> {}
 
+export interface CreateParametroSeguroBatchData extends Omit<CreateParametroSeguroData, 'idTipoContainer'> {
+  idsTipoContainer: number[];
+}
+
+export interface CreateParametroSeguroBatchResponse {
+  created: number;
+  errors: number;
+  parametros: ParametroSeguro[];
+  detalhesErros: Array<{ idTipoContainer: number; message: string }>;
+}
+
 export interface CalculoSeguroRequest {
   valorMercadoria: number;
   idTipoContainer?: number;
