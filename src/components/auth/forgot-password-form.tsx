@@ -34,7 +34,7 @@ export default function ForgotPasswordForm() {
       const result = await solicitarRecuperacaoSenha(data.email);
 
       // Always show success message (security - don't reveal if email exists)
-      showAlert("success", result.message);
+      showAlert(result.message, "success");
 
       // In development, log the code for testing
       if (process.env.NODE_ENV === "development" && result.devCode) {
@@ -49,7 +49,7 @@ export default function ForgotPasswordForm() {
         error instanceof Error
           ? error.message
           : "Ocorreu um erro ao processar sua solicitacao. Tente novamente.";
-      showAlert("error", errorMessage);
+      showAlert(errorMessage);
     } finally {
       setLoading(false);
     }

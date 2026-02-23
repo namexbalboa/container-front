@@ -69,10 +69,10 @@ export default function ResetPasswordForm() {
       const result = await redefinirSenha(data.email, data.codigo, data.novaSenha);
 
       if (result.success) {
-        showAlert("success", result.message);
+        showAlert(result.message, "success");
         router.push("/login");
       } else {
-        showAlert("error", result.message);
+        showAlert(result.message);
       }
     } catch (error) {
       console.error("Reset password error:", error);
@@ -80,7 +80,7 @@ export default function ResetPasswordForm() {
         error instanceof Error
           ? error.message
           : "Ocorreu um erro ao redefinir sua senha. Tente novamente.";
-      showAlert("error", errorMessage);
+      showAlert(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -89,7 +89,7 @@ export default function ResetPasswordForm() {
   const handleResendCode = async () => {
     const email = watch("email");
     if (!email) {
-      showAlert("error", "Informe o email para reenviar o codigo");
+      showAlert("Informe o email para reenviar o codigo");
       return;
     }
 
@@ -97,7 +97,7 @@ export default function ResetPasswordForm() {
 
     try {
       const result = await solicitarRecuperacaoSenha(email);
-      showAlert("success", "Codigo reenviado com sucesso");
+      showAlert("Codigo reenviado com sucesso", "success");
 
       // In development, log the code for testing
       if (process.env.NODE_ENV === "development" && result.devCode) {
@@ -109,7 +109,7 @@ export default function ResetPasswordForm() {
         error instanceof Error
           ? error.message
           : "Ocorreu um erro ao reenviar o codigo. Tente novamente.";
-      showAlert("error", errorMessage);
+      showAlert(errorMessage);
     } finally {
       setResendLoading(false);
     }

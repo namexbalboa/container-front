@@ -62,7 +62,7 @@ export default function ParametrosPage() {
     const novoStatus = !parametro.ativo;
 
     try {
-      const response = await apiService.updateParametroSeguro(parametro.idParametro, {
+      const response = await apiService.updateParametroSeguroGeral(parametro.idParametro, {
         ativo: novoStatus,
       });
 
@@ -92,7 +92,7 @@ export default function ParametrosPage() {
     if (!confirm("Tem certeza que deseja desativar este parâmetro?")) return;
 
     try {
-      await apiService.deleteParametroSeguro(id);
+      await apiService.deleteParametroSeguroGeral(id);
       loadParametros();
     } catch (error) {
       console.error("Erro ao deletar parâmetro:", error);

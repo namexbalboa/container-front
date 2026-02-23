@@ -237,19 +237,19 @@ export function ParametroForm({ parametroId }: ParametroFormProps) {
       if (isEditMode) {
         // Modo edição: atualiza apenas o parâmetro único
         await apiService.updateParametroSeguroGeral(parametroId!, baseData);
-        showAlert("Parâmetro atualizado com sucesso.");
+        showAlert("Parâmetro atualizado com sucesso.", "success");
       } else if (selectedTipoIds.length === 0) {
         // Nenhum tipo selecionado: cria parâmetro genérico
         const { idTipoContainer, ...dataWithoutTipo } = baseData;
         await apiService.createParametroSeguroGeral(dataWithoutTipo as CreateParametroSeguroData);
-        showAlert("Parâmetro criado com sucesso.");
+        showAlert("Parâmetro criado com sucesso.", "success");
       } else if (selectedTipoIds.length === 1) {
         // Um único tipo: cria normalmente
         await apiService.createParametroSeguroGeral({
           ...baseData,
           idTipoContainer: selectedTipoIds[0],
         } as CreateParametroSeguroData);
-        showAlert("Parâmetro criado com sucesso.");
+        showAlert("Parâmetro criado com sucesso.", "success");
       } else {
         // Múltiplos tipos: batch
         const { idTipoContainer, ...batchBase } = baseData;
@@ -262,7 +262,7 @@ export function ParametroForm({ parametroId }: ParametroFormProps) {
           if (errors > 0) {
             showAlert(`${created} parâmetro(s) criado(s), ${errors} erro(s).`);
           } else {
-            showAlert(`${created} parâmetro(s) criado(s) com sucesso.`);
+            showAlert(`${created} parâmetro(s) criado(s) com sucesso.`, "success");
           }
         }
       }
