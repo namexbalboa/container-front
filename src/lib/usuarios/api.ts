@@ -74,6 +74,37 @@ export async function listarUsuariosAtivos(): Promise<Usuario[]> {
   return response.success && response.data ? response.data.items : [];
 }
 
+// ============================================
+// RECUPERAÇÃO DE SENHA
+// ============================================
+
+export async function solicitarRecuperacaoSenha(email: string): Promise<{ success: boolean; message: string; devCode?: string }> {
+  const response = await apiService.post<{ message: string; devCode?: string }>("/auth/forgot-password", { email });
+
+  if (!response.success) {
+    throw new Error(response.message || "Erro ao solicitar recuperação de senha.");
+  }
+
+  return {
+    success: true,
+    message: response.data?.message || "Se o email estiver cadastrado, você receberá um código de recuperação.",
+    devCode: response.data?.devCode,
+  };
+}
+
+export async function redefinirSenha(email: string, codigo: string, novaSenha: string): Promise<{ success: boolean; message: string }> {
+  const response = await apiService.post<{ message: string }>("/auth/reset-password", {
+    email,
+    codigo,
+    novaSenha,
+  });
+
+  return {
+    success: response.success,
+    message: response.data?.message || response.message || (response.success ? "Senha redefinida com sucesso." : "Erro ao redefinir senha."),
+  };
+}
+
 export async function verificarEmailEmUso(email: string, excluirId?: number): Promise<boolean> {
   try {
     const response = await listarUsuarios({ search: email, limit: 10 });

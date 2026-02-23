@@ -111,11 +111,45 @@ export const alterarStatusSchema = z.object({
     .optional(),
 });
 
+// Schema para recuperação de senha (esqueci a senha)
+export const forgotPasswordSchema = z.object({
+  email: z.string()
+    .email("Email inválido")
+    .max(255, "Email deve ter no máximo 255 caracteres"),
+});
+
+// Schema para redefinição de senha (com código)
+export const resetPasswordSchema = z.object({
+  email: z.string()
+    .email("Email inválido"),
+
+  codigo: z.string()
+    .min(6, "Código deve ter 6 dígitos")
+    .max(6, "Código deve ter 6 dígitos")
+    .regex(/^\d{6}$/, "Código deve conter apenas números"),
+
+  novaSenha: z.string()
+    .min(6, "Nova senha deve ter no mínimo 6 caracteres")
+    .max(100, "Nova senha deve ter no máximo 100 caracteres")
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+      "Senha deve conter pelo menos uma letra maiúscula, uma minúscula e um número"
+    ),
+
+  confirmacaoSenha: z.string()
+    .min(1, "Confirmação de senha é obrigatória"),
+}).refine((data) => data.novaSenha === data.confirmacaoSenha, {
+  message: "As senhas não coincidem",
+  path: ["confirmacaoSenha"],
+});
+
 // Tipos inferidos dos schemas
 export type UsuarioCreateInput = z.infer<typeof usuarioCreateSchema>;
 export type UsuarioUpdateInput = z.infer<typeof usuarioUpdateSchema>;
 export type AlterarSenhaInput = z.infer<typeof alterarSenhaSchema>;
 export type AlterarStatusInput = z.infer<typeof alterarStatusSchema>;
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 
 // Helper para formatar CPF
 export function formatCPF(cpf: string): string {
