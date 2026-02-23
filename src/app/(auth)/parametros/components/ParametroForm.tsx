@@ -67,7 +67,7 @@ export function ParametroForm({ parametroId }: ParametroFormProps) {
 
     try {
       setLoading(true);
-      const response = await apiService.getParametroSeguroById(parametroId);
+      const response = await apiService.getParametroSeguroGeralById(parametroId);
       if (response.success && response.data) {
         // A resposta pode vir em data.data ou diretamente em data
         const p = response.data.data || response.data;
