@@ -111,7 +111,7 @@ export default function ViagensPage() {
       cancelada: { label: "Cancelada", className: "bg-red-500" },
     };
 
-    const config = statusConfig[status];
+    const config = statusConfig[status] || { label: status, className: "bg-gray-500" };
     return (
       <Badge className={config.className}>
         {config.label}
@@ -137,7 +137,7 @@ export default function ViagensPage() {
       API: { label: "API", className: "bg-purple-500" },
     };
 
-    const conf = config[origem];
+    const conf = config[origem] || { label: origem, className: "bg-gray-500" };
     return <Badge className={conf.className}>{conf.label}</Badge>;
   }
 
